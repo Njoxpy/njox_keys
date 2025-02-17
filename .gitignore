@@ -1,0 +1,12 @@
+# Node.js
+node_modules/
+npm-debug.log
+
+# Docker
+docker-compose.yml
+
+# Vercel
+.vercel/
+
+# Environment variables
+.env
