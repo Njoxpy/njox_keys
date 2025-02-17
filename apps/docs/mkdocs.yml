@@ -1,0 +1,50 @@
+site_name: Key Management System
+site_url: https://example.com/
+site_author: Godbless Nyagawa
+site_description: Documentation for key management system.
+repo_url: https://github.com/Njoxpy/key-management-system
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: "#FF6F00"  # Orange (Primary color)
+      accent: "#00897B"   # Teal (Secondary/Accent color)
+  font:
+    text: Roboto  # Primary font for text content
+    code: Roboto Mono  # Font for code blocks
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+
+nav:
+  - Home: index.md
+  - API Reference:
+      - Overview: api/api.md
+      - Logs: api/logs.md
+      - Orders: api/orders.md
+      - Users: api/user.md
+      - Venues: api/venue.md
+  - UML Diagrams: uml/uml.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Njoxpy/key-management-system
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/Njox16

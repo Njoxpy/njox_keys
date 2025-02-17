@@ -39,8 +39,9 @@ classDiagram
     User "1" --> "*" Scheduler : schedules
     Post "1" --> "1" Analytics : tracks
 ```
-```
+
 ### **Explanation of the Diagram**
+
 1. **Classes Defined**:
    - `User` (has attributes like `id`, `name`, `email` and methods like `login()`, `logout()`)
    - `Post` (represents content created by users)

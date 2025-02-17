@@ -18,7 +18,7 @@
 
 ## Introduction
 
-The Key Management System (KMS) API is designed to help organizations manage key data securely and efficiently. The API provides endpoints for managing users, venues, orders, and logs. It supports various user roles with different levels of access and allows for seamless integration into existing applications.
+The Key Management System (KMS) API is designed to help organizations manage key data securely and efficiently. The API provides endpoints for managing users, venues, orders, and logs. It supports only 2 rules `(admin and employee)` with different levels of access and allows for seamless integration into existing applications.
 
 Use this API to streamline key management processes, monitor system activity, and ensure data integrity across all services.
 
@@ -31,7 +31,7 @@ Use this API to streamline key management processes, monitor system activity, an
 Before using the API, ensure you have the following:
 
 1. **API Access Token**: Obtain a token via the authentication process.
-2. **Dependencies**: If needed, install any required dependencies such as the `requests` library for Python or equivalent for your environment.
+2. **Dependencies**: If needed, install any required dependencies.
 
 ### Authentication
 
@@ -45,71 +45,6 @@ X-RateLimit-Limit: <limit> /<period> (e.g., 10/min)
 ---
 
 ## API Endpoints
-
-### Users
-
-**Description**:
-
-**Parameters**:
-
-- `userId`
-
-**Request Body**:
-
-```json
-{
-  "email": "",
-  "password": "",
-  "role": "",
-  "category": ""
-}
-```
-
-**Response**:
-
-- **200 OK**:
-- **204 No Content**:
-
-#### GET `/api/v1/users`
-
-- **Description**: This endpoint retrieves a list of users. Only users with the `admin` role can access this endpoint.
-- **Parameters**:
-  - `userId`: The `userId` of the requesting admin must be passed in the request to authenticate.
-  
-- **Request Body**:
-
-  ```json
-  {
-    "email": "admin@example.com",
-    "password": "$2b$12$wplH91Gva4l0dr0nWcJOZuI7DK4JV2lPq9teFhxZA32F/O/erJB3G",
-    "role": "admin",
-    "category": "printing"
-  }
-  ```
-
-- **Response**:
-  - **200 OK**: Returns a list of users.
-  - **204 No Content**: If no users exist.
-
-#### GET `/api/v1/users`
-
-### Orders
-
-No specific details for this section provided. Include similar structure as needed for your orders API.
-
-### Logs
-
-#### GET `/api/v1/logs`
-
-- **Description**: Retrieves a list of logs for a specific resource.
-- **Parameters**:
-  - `resource_type` (required): Type of the resource to fetch logs for.
-
-- **Response**:
-  - **200 OK**: Returns logs related to the resource.
-  - **404 Not Found**: If no logs are found.
-
----
 
 ## Authentication & Rate Limiting
 
@@ -162,6 +97,16 @@ def test_get_users():
     assert len(response.json()) > 0
 ```
 
+example of another test written using express.js
+
+```js
+import {express} from "express"
+
+describe.("action", (_id) => {
+  it('should return new user into the syetm')
+})
+```
+
 ---
 
 ## Version Information
@@ -175,7 +120,7 @@ Changelog:
 
 | Version | Date       | Changes                                    |
 |---------|------------|--------------------------------------------|
-| v1.0    | 2025-01-01 | Initial release                           |
+| v1.0    | 2025-02-17 | Initial release                           |
 | v1.1    | 2025-02-01 | Added order management and enhanced logging|
 
 ---
