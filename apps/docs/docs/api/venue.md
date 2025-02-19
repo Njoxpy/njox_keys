@@ -6,6 +6,7 @@
 - **block**: Block or area where the venue is located (e.g., Block A)
 - **capacity**: Maximum capacity of people the venue can hold (e.g., 200 people)
 - **images**: Array of image URLs (or file paths) representing the venue.
+- **status**: status of the venue(which can be booked, pending).
 
 ---
 
@@ -27,7 +28,8 @@
       "https://example.com/image2.jpg"
     ],
     "createdAt": "2025-02-17T10:00:00Z",
-    "updatedAt": "2025-02-17T10:00:00Z"
+    "updatedAt": "2025-02-17T10:00:00Z",
+    "status" : "booked"
   },
   {
     "_id": "venue124",
@@ -59,6 +61,7 @@
 {
   "name": "Auditorium B",
   "block": "Block C",
+  "userId": "w3eegcr5er14qere4r",
   "capacity": 300,
   "images": [
     "https://example.com/venue-image1.jpg",

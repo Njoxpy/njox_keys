@@ -12,6 +12,7 @@ Check out the documentation for detailed instructions on how to use the project 
 
 ### Sections
 
+- [Getting started](./getting_started.md)
 - [API Documentation](./api/api.md)
 
 ## Contact
