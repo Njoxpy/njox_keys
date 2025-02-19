@@ -1,7 +1,7 @@
 site_name: Key Management System
 site_url: https://example.com/
 site_author: Godbless Nyagawa
-site_description: Documentation for key management system.
+site_description: Documentation for the Key Management System.
 repo_url: https://github.com/Njoxpy/key-management-system
 edit_uri: edit/main/docs/
 
@@ -48,3 +48,7 @@ extra:
       link: https://github.com/Njoxpy/key-management-system
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/Njox16
+
+  # Optional: Set logo and favicon
+  logo: assets/logo.png
+  favicon: assets/favicon.ico

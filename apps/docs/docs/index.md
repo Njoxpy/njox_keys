@@ -4,7 +4,7 @@ Welcome to Key management system website, this docs will be all the information 
 
 ## About the Project
 
-This project is designed to help develpers about the architecture of the `key management system`. It's built using MkDocs, a static site generator that's easy to use and configure. It helps you create beautiful documentation with Markdown.
+This project is designed to help `developers` about the architecture of the `key management system`. It's built using MkDocs, a static site generator that's easy to use and configure. It helps you create beautiful documentation with Markdown.
 
 ## Documentation
 
@@ -12,7 +12,6 @@ Check out the documentation for detailed instructions on how to use the project 
 
 ### Sections
 
-- [Getting Started](getting_started.md)
 - [API Documentation](./api/api.md)
 
 ## Contact
