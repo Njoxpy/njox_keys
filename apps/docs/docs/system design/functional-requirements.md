@@ -2,7 +2,7 @@
 
 This section outlines the functional requirements of the system, highlighting the goals and objectives the system aims to achieve. Below is a list of the functionalities the website will provide.
 
-![functional image](../assets/functional requirements.png)
+![functional image](../assets/functional%20requirements.drawio.png)
 
 ## User Management
 
@@ -10,15 +10,15 @@ This section outlines the functional requirements of the system, highlighting th
 
 ## Search and Discovery
 
-- Users will be able to search for venues and orders on the website. They can filter venues based on capacity, block, and name.
+- Users will be able to search for venues and orders on the website. They can filter venues based on `capacity`, `block`, and `name`.
 
 ## Venue Management
 
-- Only admins will have the ability to add, edit, and delete venue details within the system.
+- Only admins will have the ability to `add`, `edit`, and `delete` venue details within the system.
 
 ## Order Management
 
-- Employees will be able to create, edit, delete, and update orders on the website.
+- Employees will be able to `create`, `edit`, `delete`, and `update` orders on the website.
 
 ## Fingerprint Management
 
