@@ -23,6 +23,10 @@ Check out the documentation for detailed instructions on how to use the project 
 
 For any questions or suggestions, feel free to reach out to me at [godbless.kms.gmail.com](mailto:godbless.kms.gmail.com).
 
+## NOTE
+
+- This project aims to utilize the use of `Njox A-Z Approach`.
+
 ---
 
 Made with 💙 by [NjoxPy](https://github.com/Njoxpy)

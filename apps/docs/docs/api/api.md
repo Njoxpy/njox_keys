@@ -120,7 +120,7 @@ Changelog:
 
 | Version | Date       | Changes                                    |
 |---------|------------|--------------------------------------------|
-| v1.0    | 2025-02-17 | Initial release                           |
+| v1.0    | 2025-02-20 | Initial release                           |
 | v1.1    | 2025-02-01 | Added order management and enhanced logging|
 
 ---

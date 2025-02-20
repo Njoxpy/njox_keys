@@ -1,6 +1,6 @@
 # **📚 Database Design Documentation**
 
-### **Overview**
+## **Overview**
 
 This section provides an overview of the database design for the system, outlining the entities and their relationships within the system, along with the schema definitions.
 
@@ -14,7 +14,7 @@ The system comprises the following core entities:
 
 | **Entity** | **Description** |
 |:-----------|----------------|
-| **Venue** | Stores venue information, such as name, block, capacity, equipment, images, status, and abbreviation. |
+| **Venue** | Stores venue information, such as name, block, capacity, equipment,description, images, status, and abbreviation. |
 | **Users** | Represents the registered users, with attributes like first name, last name, email, registration number, course, phone number, and role (employee/admin). |
 | **Order** | Contains the details of the venue bookings, including the venue info (name, block, capacity, equipment, images, status), along with the user ID who made the booking. |
 | **Logs** | Logs user actions in the system, captured using a logging package (e.g., Winston) rather than a model. |
@@ -31,18 +31,22 @@ The **Venue** entity will store details about each venue in the system.
 
 ```json
 {
-  "_id": ObjectId("..."),
-  "name": "Conference Room A",
-  "block": "B",
-  "capacity": 100,
-  "equipment": ["Projector", "Speakers"],
-  "images": ["image1.jpg", "image2.jpg"],
-  "status": "available",  // booked, available, etc.
-  "abbreviation": "CRA",
-  "createdAt": ISODate("2025-02-20T12:00:00Z"),
-  "updatedAt": ISODate("2025-02-20T12:00:00Z")
+  "abbreviation": "kifupisho",
+  "block": "6A",
+  "capacity": 34,
+  "description": "just description about the venue",
+  "equipment": [
+    "projector",
+    "microphone"
+  ],
+  "images": [],
+  "name": "new lecture hall3",
+  "status": "available",
+  "__v": 0
 }
 ```
+
+- equipment is the array for the list of equipments available, images.
 
 #### **2️⃣ Users Schema**
 

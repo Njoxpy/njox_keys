@@ -8,7 +8,7 @@ edit_uri: edit/main/docs/
 theme:
   name: material
   palette:
-    - scheme: default
+    - scheme: material
       primary: "#FF6F00"  # Orange (Primary color)
       accent: "#00897B"   # Teal (Secondary/Accent color)
   font:
@@ -25,18 +25,22 @@ theme:
 
 nav:
   - Home: index.md
-  - Functional requirements: system design\functional-requirements.md
-  - Non-Functional requirements(NFRs): system design\non-functional-requirements.md
-  - High Level Design:
-      - Database Design: system design\database-design.md
-      - Flow Diagram: system design\flow-diagram.md
-      - UML Diagrams: uml/uml.md
-  - API Reference:
-      - Overview: api/api.md
-      - Logs: api/logs.md
-      - Orders: api/orders.md
-      - Users: api/user.md
-      - Venues: api/venue.md
+  - System Design:
+    - Functional requirements: system design\functional-requirements.md
+    - Non-Functional requirements(NFRs): system design\non-functional-requirements.md
+    - High Level Design:
+        - Database Design: system design\database-design.md
+        - Flow Diagram: system design\flow-diagram.md
+        - UML Diagrams: uml/uml.md
+    - API Reference:
+        - Overview: api/api.md
+        - Logs: api/logs.md
+        - Orders: api/orders.md
+        - Users: api/user.md
+        - Venues: api/venue.md
+  - Frontend:
+      - Styles:
+          - Colors: styles\colors.md
   
 
 markdown_extensions:
