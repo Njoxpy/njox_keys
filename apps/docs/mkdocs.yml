@@ -25,13 +25,19 @@ theme:
 
 nav:
   - Home: index.md
+  - Functional requirements: system design\functional-requirements.md
+  - Non-Functional requirements(NFRs): system design\non-functional-requirements.md
+  - High Level Design:
+      - Database Design: system design\database-design.md
+      - Flow Diagram: system design\flow-diagram.md
+      - UML Diagrams: uml/uml.md
   - API Reference:
       - Overview: api/api.md
       - Logs: api/logs.md
       - Orders: api/orders.md
       - Users: api/user.md
       - Venues: api/venue.md
-  - UML Diagrams: uml/uml.md
+  
 
 markdown_extensions:
   - admonition

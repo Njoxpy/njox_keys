@@ -1,4 +1,8 @@
-# Welcome to Key Management System
+<h1 align="center">Welcome to Key Management System</h1>
+
+<p align="center">
+  <img src="./assets/logo.png" alt="Centered Image">
+</p>
 
 Welcome to Key management system website, this docs will be all the information about key management system related information.
 

@@ -1,27 +1,26 @@
-To manage venues with **CRUD** (Create, Read, Update, Delete) operations, I'll provide an example for each operation, similar to how we structured the previous user operations. We’ll define endpoints and their responses for managing venues, including the required fields like name, block, capacity, and images.
 
-### **Venue CRUD Operations**
+# **Order CRUD Operations**
 
 ---
 
-### **1. Create Venue** - `POST /api/v1/venues`
+## **1. Create Order** - `POST /api/v1/orders`
 
-- **Description**: Allows an admin to create a new venue with the required details: `name`, `block`, `capacity`, and optional `images`.
+- **Description**: Allows a user to create an order for a venue, where the user selects a venue and books it with a given date and time.
 
 - **Parameters**:
-  - `name`: The name of the venue.
-  - `block`: The block where the venue is located.
-  - `capacity`: The capacity of the venue (number of people it can hold).
-  - `images`: A list of image URLs (optional).
+  - `venueId`: ID of the venue being booked.
+  - `userId`: ID of the user making the booking.
+  - `bookingDate`: The date and time the venue is booked for.
+  - `status`: The status of the order (e.g., `pending`, `confirmed`).
 
 - **Request Body**:
 
 ```json
 {
-  "name": "Conference Hall A",
-  "block": "Block A",
-  "capacity": 300,
-  "images": ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
+  "venueId": "venue123",
+  "userId": "user456",
+  "bookingDate": "2025-03-10T10:00:00Z",
+  "status": "pending"
 }
 ```
 
@@ -30,101 +29,97 @@ To manage venues with **CRUD** (Create, Read, Update, Delete) operations, I'll p
 ```json
 {
   "status": "success",
-  "message": "Venue created successfully.",
+  "message": "Order created successfully.",
   "data": {
-    "name": "Conference Hall A",
-    "block": "Block A",
-    "capacity": 300,
-    "images": ["https://example.com/image1.jpg", "https://example.com/image2.jpg"],
-    "createdAt": "2025-02-17T10:00:00.000Z",
-    "updatedAt": "2025-02-17T10:00:00.000Z"
+    "_id": "order123",
+    "venueId": "venue123",
+    "userId": "user456",
+    "bookingDate": "2025-03-10T10:00:00Z",
+    "status": "pending",
+    "createdAt": "2025-02-17T10:00:00Z",
+    "updatedAt": "2025-02-17T10:00:00Z"
   }
 }
 ```
 
 - **Response Codes**:
-  - **201 CREATED**: Venue successfully created.
-  - **400 BAD REQUEST**: If any required fields are missing or invalid (e.g., missing `name` or `capacity`).
+  - **201 CREATED**: Order successfully created.
+  - **400 BAD REQUEST**: If any required fields are missing or invalid (e.g., missing `venueId` or `bookingDate`).
+  - **404 NOT FOUND**: If `venueId` or `userId` does not exist.
 
 ---
 
-### **2. Get All Venues** - `GET /api/v1/venues`
+## **2. Get All Orders** - `GET /api/v1/orders`
 
-- **Description**: Retrieves a list of all venues in the system.
+- **Description**: Retrieves a list of all orders in the system.
 
 - **Response**:
 
 ```json
 [
   {
-    "_id": "venue_id_1",
-    "name": "Conference Hall A",
-    "block": "Block A",
-    "capacity": 300,
-    "images": ["https://example.com/image1.jpg", "https://example.com/image2.jpg"],
-    "createdAt": "2025-02-17T10:00:00.000Z",
-    "updatedAt": "2025-02-17T10:00:00.000Z"
+    "_id": "order123",
+    "venueId": "venue123",
+    "userId": "user456",
+    "bookingDate": "2025-03-10T10:00:00Z",
+    "status": "pending",
+    "createdAt": "2025-02-17T10:00:00Z",
+    "updatedAt": "2025-02-17T10:00:00Z"
   },
   {
-    "_id": "venue_id_2",
-    "name": "Meeting Room B",
-    "block": "Block B",
-    "capacity": 50,
-    "images": ["https://example.com/image3.jpg"],
-    "createdAt": "2025-02-17T10:15:00.000Z",
-    "updatedAt": "2025-02-17T10:15:00.000Z"
+    "_id": "order124",
+    "venueId": "venue124",
+    "userId": "user457",
+    "bookingDate": "2025-03-15T14:00:00Z",
+    "status": "confirmed",
+    "createdAt": "2025-02-18T10:15:00Z",
+    "updatedAt": "2025-02-18T10:15:00Z"
   }
 ]
 ```
 
 - **Response Codes**:
-  - **200 OK**: Returns a list of all venues.
-  - **204 No Content**: If no venues are found.
+  - **200 OK**: Returns a list of all orders.
+  - **204 No Content**: If no orders are found.
 
 ---
 
-### **3. Get Venue by ID** - `GET /api/v1/venues/:id`
+## **3. Get Order by ID** - `GET /api/v1/orders/:id`
 
-- **Description**: Retrieves a specific venue by its ID.
+- **Description**: Retrieves a specific order by its ID.
 
 - **Response**:
 
 ```json
 {
-  "_id": "venue_id_1",
-  "name": "Conference Hall A",
-  "block": "Block A",
-  "capacity": 300,
-  "images": ["https://example.com/image1.jpg", "https://example.com/image2.jpg"],
-  "createdAt": "2025-02-17T10:00:00.000Z",
-  "updatedAt": "2025-02-17T10:00:00.000Z"
+  "_id": "order123",
+  "venueId": "venue123",
+  "userId": "user456",
+  "bookingDate": "2025-03-10T10:00:00Z",
+  "status": "pending",
+  "createdAt": "2025-02-17T10:00:00Z",
+  "updatedAt": "2025-02-17T10:00:00Z"
 }
 ```
 
 - **Response Codes**:
-  - **200 OK**: Returns the venue by ID.
-  - **404 NOT FOUND**: If the venue is not found.
+  - **200 OK**: Returns the order by ID.
+  - **404 NOT FOUND**: If the order is not found.
 
 ---
 
-### **4. Update Venue** - `PUT /api/v1/venues/:id`
+## **4. Update Order** - `PUT /api/v1/orders/:id`
 
-- **Description**: Allows an admin to update a venue's details.
+- **Description**: Allows an admin to update the details of an existing order.
 
 - **Parameters**:
-  - `name`: The venue’s name.
-  - `block`: The block where the venue is located.
-  - `capacity`: The capacity of the venue.
-  - `images`: Updated list of image URLs.
+  - `status`: The updated status of the order (e.g., `pending`, `confirmed`).
 
 - **Request Body**:
 
 ```json
 {
-  "name": "Updated Conference Hall A",
-  "block": "Block A",
-  "capacity": 350,
-  "images": ["https://example.com/updated_image1.jpg"]
+  "status": "confirmed"
 }
 ```
 
@@ -133,93 +128,92 @@ To manage venues with **CRUD** (Create, Read, Update, Delete) operations, I'll p
 ```json
 {
   "status": "success",
-  "message": "Venue updated successfully.",
+  "message": "Order updated successfully.",
   "data": {
-    "name": "Updated Conference Hall A",
-    "block": "Block A",
-    "capacity": 350,
-    "images": ["https://example.com/updated_image1.jpg"],
-    "createdAt": "2025-02-17T10:00:00.000Z",
-    "updatedAt": "2025-02-17T11:00:00.000Z"
+    "_id": "order123",
+    "venueId": "venue123",
+    "userId": "user456",
+    "bookingDate": "2025-03-10T10:00:00Z",
+    "status": "confirmed",
+    "createdAt": "2025-02-17T10:00:00Z",
+    "updatedAt": "2025-02-17T11:00:00Z"
   }
 }
 ```
 
 - **Response Codes**:
-  - **200 OK**: Venue successfully updated.
-  - **400 BAD REQUEST**: If required fields are invalid or missing.
-  - **404 NOT FOUND**: If the venue with the given ID does not exist.
+  - **200 OK**: Order successfully updated.
+  - **404 NOT FOUND**: If the order with the given ID does not exist.
 
 ---
 
-### **5. Delete Venue** - `DELETE /api/v1/venues/:id`
+## **5. Delete Order** - `DELETE /api/v1/orders/:id`
 
-- **Description**: Allows an admin to delete a venue by its ID.
+- **Description**: Allows an admin to delete a specific order by its ID.
 
 - **Response**:
 
 ```json
 {
   "status": "success",
-  "message": "Venue deleted successfully."
+  "message": "Order deleted successfully."
 }
 ```
 
 - **Response Codes**:
-  - **200 OK**: Venue successfully deleted.
-  - **404 NOT FOUND**: If the venue with the given ID does not exist.
+  - **200 OK**: Order successfully deleted.
+  - **404 NOT FOUND**: If the order with the given ID does not exist.
 
 ---
 
-### **6. Get Total Venue Count** - `GET /api/v1/venues-total`
+## **6. Get Total Order Count** - `GET /api/v1/orders-total`
 
-- **Description**: Retrieves the total number of venues in the system.
+- **Description**: Retrieves the total number of orders in the system.
 
 - **Response**:
 
 ```json
 {
-  "totalCount": 5
+  "totalCount": 10
 }
 ```
 
 - **Response Codes**:
-  - **200 OK**: Successfully returns the total count of venues.
-  - **204 No Content**: If no venues exist, the count will be zero.
+  - **200 OK**: Successfully returns the total count of orders.
+  - **204 No Content**: If no orders exist, the count will be zero.
 
 ---
 
-### Example Flow for Venue Operations
+## Example Flow for Order Operations
 
-1. **Admin creates a venue**:
-   - POST `/api/v1/venues` with venue data.
-   - Response: Venue created successfully.
+1. **Create an order**:
+   - POST `/api/v1/orders` with venue and user details.
+   - Response: Order created successfully.
 
-2. **Get all venues**:
-   - GET `/api/v1/venues`.
-   - Response: List of all venues.
+2. **Get all orders**:
+   - GET `/api/v1/orders`.
+   - Response: List of all orders.
 
-3. **Get a specific venue**:
-   - GET `/api/v1/venues/:id`.
-   - Response: Details of the venue.
+3. **Get a specific order**:
+   - GET `/api/v1/orders/:id`.
+   - Response: Details of the order.
 
-4. **Update a venue**:
-   - PUT `/api/v1/venues/:id` with updated data.
-   - Response: Venue updated successfully.
+4. **Update an order**:
+   - PUT `/api/v1/orders/:id` with updated order status.
+   - Response: Order updated successfully.
 
-5. **Delete a venue**:
-   - DELETE `/api/v1/venues/:id`.
-   - Response: Venue deleted successfully.
+5. **Delete an order**:
+   - DELETE `/api/v1/orders/:id`.
+   - Response: Order deleted successfully.
 
-6. **Get total venue count**:
-   - GET `/api/v1/venues-total`.
-   - Response: Returns the total count of venues.
+6. **Get total order count**:
+   - GET `/api/v1/orders-total`.
+   - Response: Returns the total count of orders.
 
 ---
 
-### **Security & Validation Notes**
+## **Security & Validation Notes**
 
-- Make sure to validate all incoming data, especially when creating or updating venues (e.g., check that capacity is a number, and images are valid URLs).
-- Ensure only admins have access to these operations for proper security.
-
-This structure should cover all basic operations needed to manage venues in your application.
+- Ensure only authenticated users can create orders.
+- Admin users should be the only ones who can update or delete orders.
+- Ensure proper validation on `bookingDate` and `status` fields for correct values.
