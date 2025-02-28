@@ -1,3 +1,6 @@
+import Image from "next/image";
+import Link from "next/link";
+
 const navbar = () => {
   return (
     <>
@@ -25,37 +28,44 @@ const navbar = () => {
               className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
             >
               <li>
-                <a>Venues</a>
+                <Link href={"/venues"}>Venues</Link>
               </li>
               <li>
-                <a>Orders</a>
+                <Link href={"/orders"}>Orders</Link>
               </li>
               <li>
-                <a>Returned</a>
-              </li>
-              <li>
-                <a>Returned</a>
+                <Link href={"/returned"}>Returned</Link>
               </li>
             </ul>
           </div>
-          <a className="btn btn-ghost text-xl">KMS</a>
+          <a className="btn btn-ghost text-xl">
+            <Image
+              src="/logo.png"
+              alt="KMS"
+              width={100}
+              height={100}
+              layout="fixed"
+            />
+          </a>
         </div>
         <div className="navbar-center hidden lg:flex">
           <ul className="menu menu-horizontal px-1">
             <li>
-              <a>Venues</a>
+              <Link href={"/venues"}>Venues</Link>
             </li>
             <li>
-              <a>Returned</a>
+              <Link href={"/returned"}>Returned</Link>
             </li>
 
             <li>
-              <a>Orders</a>
+              <Link href={"/orders"}>Orders</Link>
             </li>
           </ul>
         </div>
         <div className="navbar-end">
-          <a className="btn">Login</a>
+          <Link className="btn btn-primary" href={"/login"}>
+            Login
+          </Link>
         </div>
       </div>
     </>
