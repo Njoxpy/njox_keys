@@ -10,3 +10,61 @@ docker-compose.yml
 
 # Environment variables
 .env
+
+/site
+
+apps\docs\site\
+
+# MkDocs build directory
+/site/
+
+# Python virtual environment
+venv/
+.env/
+.venv/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Editor & System Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.swp
+*.swo
+
+# mkdocs-material theme overrides (if using)
+overrides/__pycache__/
+
+# MkDocs build directory
+/site/
+site/
+# Python virtual environment
+venv/
+.env/
+.venv/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Editor & System Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.swp
+*.swo
+
+# mkdocs-material theme overrides (if using)
+overrides/__pycache__/
