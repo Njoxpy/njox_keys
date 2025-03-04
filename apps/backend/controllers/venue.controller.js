@@ -1,6 +1,9 @@
 // models
 const Venue = require("../models/venue.model");
 
+// redis
+const redis = require("../config/redisClient");
+
 // response
 const {
   OK,
@@ -12,11 +15,23 @@ const {
 // read
 const getAllVenues = async (req, res) => {
   try {
+    // create cache key for venues
+    const cacheKey = "venues";
+
+    const cachedData = await redis.get(cacheKey);
+
+    if (cachedData) {
+      console.log(`cache hit`);
+      return res.status(OK).json(JSON.parse(cachedData));
+    }
     const venues = await Venue.find().sort({ createdAt: -1 });
 
     if (venues.length === 0) {
       return res.status(NOT_FOUND).json({ message: "There no venues for now" });
     }
+
+    await redis.set(cacheKey, JSON.stringify(venues), "EX", 3600);
+    console.log("I have cached now!");
 
     res.status(OK).json(venues);
   } catch (error) {
