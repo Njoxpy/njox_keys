@@ -39,24 +39,13 @@ const createOrder = async (req, res) => {
 
 const getOrders = async (req, res) => {
   try {
-    const cacheKey = "orders"; // You can use a more dynamic key, like user-specific or based on query params
-
-    // Check if the data is already cached
-    const cachedOrders = await redis.get(cacheKey);
-    if (cachedOrders) {
-      console.log("Cache hit");
-      return res.status(200).json(JSON.parse(cachedOrders)); // Return cached data
-    }
-
-    // Cache miss, so fetch data from the database
-    const orders = await Order.find().sort({ createdAt: -1 });
+    const orders = await Order.find()
+      .populate("venueId")
+      .sort({ createdAt: -1 });
 
     if (orders.length === 0) {
       return res.status(404).json({ message: "No orders for now" });
     }
-
-    // Store the orders in the cache for 1 hour (TTL: time to live)
-    redis.setex(cacheKey, 3600, JSON.stringify(orders)); // Store for 1 hour
 
     res.status(200).json(orders);
   } catch (error) {
@@ -70,7 +59,7 @@ const getOrder = async (req, res) => {
 
   try {
     // validate order id
-    const order = await Order.findById(id);
+    const order = await Order.findById(id).populate("venueId");
 
     if (!order) {
       return res.status(NOT_FOUND).json({ message: "Order not found" });
@@ -181,7 +170,7 @@ const returnKeys = async (req, res) => {
         .json({ message: "Invalid status! Must be 'pending'." });
     }
 
-    if (order.status === "completed") {
+    if (order.status === "approved") {
       order.status = "pending"; // Update status to pending
       await order.save();
 
