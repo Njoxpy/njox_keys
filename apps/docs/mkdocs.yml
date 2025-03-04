@@ -8,9 +8,26 @@ edit_uri: edit/main/docs/
 theme:
   name: material
   palette:
-    - scheme: material
+    # Light mode
+    - scheme: default
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
       primary: "#FF6F00"  # Orange (Primary color)
       accent: "#00897B"   # Teal (Secondary/Accent color)
+      background: "#FFFFFF"  # White background for light mode
+      text: "#000000"  # Black text for light mode
+
+    # Dark mode
+    - scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+      primary: "#FF6F00"  # Orange (Primary color)
+      accent: "#00897B"   # Teal (Secondary/Accent color)
+      background: "#121212"  # Dark background for dark mode
+      text: "#FFFFFF"  # White text for dark mode
+
   font:
     text: Roboto  # Primary font for text content
     code: Roboto Mono  # Font for code blocks
@@ -41,7 +58,6 @@ nav:
   - Frontend:
       - Styles:
           - Colors: styles\colors.md
-  
 
 markdown_extensions:
   - admonition
