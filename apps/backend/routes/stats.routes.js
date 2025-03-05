@@ -6,6 +6,10 @@ const {
   getVenuesListCount,
   getAvailableVenuesCount,
   getBookedVenuesCount,
+  getTotalVenueOrders,
+  getTotalVenueOrdersStatus,
+  totalUsersCount,
+  getAdminEmployeeCount,
 } = require("../controllers/stats.controller");
 
 // venues
@@ -18,4 +22,16 @@ statsRoutes.get("/total-available", getAvailableVenuesCount);
 statsRoutes.get("/total-booked", getBookedVenuesCount);
 
 // order: total
+statsRoutes.get("/total-orders", getTotalVenueOrders);
+
+statsRoutes.get("/total-count", getTotalVenueOrdersStatus);
+// user stats
+
+// total user count
+// admin count
+// employee count
+statsRoutes.get("/total-users", totalUsersCount);
+
+statsRoutes.get("/total-role", getAdminEmployeeCount);
+
 module.exports = statsRoutes;
