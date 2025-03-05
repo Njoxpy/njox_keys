@@ -1,11 +1,18 @@
-const { SERVER_ERROR, OK, NOT_FOUND } = require("../constants/apiResponse");
+const {
+  SERVER_ERROR,
+  OK,
+  NOT_FOUND,
+  BAD_REQUEST,
+} = require("../constants/apiResponse");
+
+// model
 const Venue = require("../models/venue.model");
+const Order = require("../models/order.model");
+const User = require("../models/user.model");
 
 const getVenuesListCount = async (req, res) => {
   try {
-    const venueCount = await Venue.find()
-      .sort({ createdAt: -1 })
-      .countDocuments();
+    const venueCount = await Venue.countDocuments();
 
     if (venueCount === 0) {
       return res
@@ -25,9 +32,7 @@ const getVenuesListCount = async (req, res) => {
 // get available venues
 const getAvailableVenuesCount = async (req, res) => {
   try {
-    const venueCountAvailable = await Venue.find({ status: "available" })
-      .sort({ createdAt: -1 })
-      .countDocuments();
+    const venueCountAvailable = await Venue.countDocuments();
 
     if (venueCountAvailable === 0) {
       return res
@@ -46,9 +51,7 @@ const getAvailableVenuesCount = async (req, res) => {
 
 const getBookedVenuesCount = async (req, res) => {
   try {
-    const venueCountBooked = await Venue.find({ status: "booked" })
-      .sort({ createdAt: -1 })
-      .countDocuments();
+    const venueCountBooked = await Venue.countDocuments();
 
     if (venueCountBooked === 0) {
       return res
@@ -65,12 +68,113 @@ const getBookedVenuesCount = async (req, res) => {
   }
 };
 
+/* 
+Orders
+- total orders
+- approved orders
+- rejected
+- pending
+*/
+const getTotalVenueOrders = async (req, res) => {
+  try {
+    const ordersCount = await Order.countDocuments();
+
+    if (ordersCount === 0) {
+      return res
+        .status(NOT_FOUND)
+        .json({ message: "There are current 0 orders for now!" });
+    }
+
+    res.status(OK).json({ ordersCount });
+  } catch (error) {
+    res
+      .status(SERVER_ERROR)
+      .json({ message: "Failed to get orders count", error: error.message });
+  }
+};
+
+// orders status count for approved, rejected: NO NEED FOR PENDING
+const getTotalVenueOrdersStatus = async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    if (!status || !["approved", "rejected"].includes(status)) {
+      return res.status(BAD_REQUEST).json({ message: "Invalid status!" });
+    }
+
+    const orderCount = await Order.countDocuments({ status });
+
+    if (orderCount === 0) {
+      return res.status(NOT_FOUND).json({ message: "No orders found!" });
+    }
+
+    res.status(OK).json({ count: orderCount });
+  } catch (error) {
+    res
+      .status(SERVER_ERROR)
+      .json({ message: "Failed to gets status", error: error.message });
+  }
+};
+
+// users
+const totalUsersCount = async (req, res) => {
+  try {
+    const usersCount = await User.countDocuments();
+
+    if (usersCount === 0) {
+      return res.status(NOT_FOUND).json({ message: "No users" });
+    }
+
+    res.status(OK).json({ usersCount });
+  } catch (error) {
+    res.status(SERVER_ERROR).json({
+      message: "Failed to get total users count",
+      error: error.message,
+    });
+  }
+};
+
+const getAdminEmployeeCount = async (req, res) => {
+  try {
+    const { role } = req.query;
+
+    // Validate role query
+    if (!role || !["employee", "admin"].includes(role)) {
+      return res.status(BAD_REQUEST).json({
+        message: "Invalid role. Role must be either 'employee' or 'admin'.",
+      });
+    }
+
+    // Count users with the given role
+    const count = await User.countDocuments({ role });
+
+    // Check if no users with the given role
+    if (count === 0) {
+      return res.status(NOT_FOUND).json({ message: `No ${role}s for now!` });
+    }
+
+    // Return the count of users with the specified role
+    res.status(OK).json({ count });
+  } catch (error) {
+    res.status(SERVER_ERROR).json({
+      message: "Failed to get count!",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getVenuesListCount,
   getAvailableVenuesCount,
   getBookedVenuesCount,
+  getTotalVenueOrders,
+  getTotalVenueOrdersStatus,
+  totalUsersCount,
+  getAdminEmployeeCount,
 };
 
 // http://localhost:3000/api/v1/stats/total-booked
 // http://localhost:3000/api/v1/stats/total-available
 // http://localhost:3000/api/v1/stats/total-venues
+// http://localhost:3000/api/v1/stats/total-count?status=approved
+// http://localhost:3000/api/v1/stats//total-role?role=employee
