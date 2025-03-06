@@ -6,22 +6,38 @@ const orderSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       required: [true, "Venue id is required"],
       unique: [true, "venue should be unique"],
+      index: true,
     },
-    /*
-  userId: {
-    ref: "User",
-    type: String,
-    required: [true, "User id is required"],
-  },
-   */
-    bookingDate: {
+    student: {
+      ref: "Student",
+      type: mongoose.Schema.Types.ObjectId,
+      required: [true, "User id is required"],
+      index: true,
+    },
+    employee: {
+      ref: "User",
+      type: mongoose.Schema.Types.ObjectId,
+      required: [true, "Employee info(id) is required"],
+      index: true,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+      index: true,
+    },
+    createdAt: {
       type: Date,
-      required: [true, "Enter the date for booking a venue!"],
+      default: Date.now,
     },
   },
-  {
-    timestamps: true,
-  }
+
+  { timestamps: true }
 );
 
-// venueName,
+// venueId, userId, status(pending, completed), bookingDate
+const OrderModel = mongoose.model("Order", orderSchema);
+module.exports = OrderModel;
+
+// include createdBy
+// userId should have who created order and who issued
