@@ -1,0 +1,203 @@
+import { useState } from "react";
+import {
+  Home,
+  MapPin,
+  Calendar,
+  Users,
+  BookOpen,
+  Settings,
+  Menu,
+  Bell,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { Link, Outlet } from "react-router-dom";
+
+// Main App Component
+export default function AdminDashboardApp() {
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <Layout />
+    </div>
+  );
+}
+
+// Layout Component (Sidebar + Navbar + Outlet)
+function Layout() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  const closeMobileMenu = () => {
+    if (window.innerWidth < 768) {
+      setIsMobileMenuOpen(false);
+    }
+  };
+
+  return (
+    <div className="flex h-screen">
+      {/* Sidebar */}
+      <Sidebar
+        isOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
+        onNavClick={closeMobileMenu}
+        className="hidden md:flex"
+      />
+
+      {/* Mobile Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 bg-slate-800 bg-opacity-50 z-20 md:hidden">
+          <div className="relative w-64 h-full">
+            <Sidebar
+              isOpen={true}
+              onNavClick={closeMobileMenu}
+              className="fixed top-0 left-0 h-full"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className="flex flex-col flex-1 overflow-hidden">
+        {/* Navbar */}
+        <Navbar
+          pageTitle="Dashboard"
+          toggleSidebar={toggleSidebar}
+          toggleMobileMenu={toggleMobileMenu}
+        />
+
+        {/* Page Content */}
+        <main className="flex-1 p-6 overflow-y-auto">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}
+
+// Sidebar Component
+const Sidebar = ({ isOpen, toggleSidebar, onNavClick, className }) => {
+  const navItems = [
+    { name: "Dashboard", path: "/admin/dashboard", icon: Home },
+    { name: "Venues", path: "/admin/venues", icon: MapPin },
+    { name: "Bookings", path: "/admin/bookings", icon: Calendar },
+    { name: "Users", path: "/admin/users", icon: Users },
+    { name: "Students", path: "/admin/students", icon: BookOpen },
+    { name: "Settings", path: "/admin/settings", icon: Settings },
+  ];
+
+  return (
+    <aside
+      className={`${className} flex-col bg-slate-800 text-white transition-all duration-300 z-30 ${
+        isOpen ? "w-64" : "w-20"
+      }`}
+    >
+      {/* Logo */}
+      <div className="flex items-center justify-between p-4 h-16 border-b border-slate-700">
+        {isOpen && <h1 className="text-xl font-bold">Admin Portal</h1>}
+        {toggleSidebar && (
+          <button
+            onClick={toggleSidebar}
+            className="p-1 rounded-full hover:bg-slate-700 focus:outline-none"
+          >
+            {isOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+          </button>
+        )}
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 py-4">
+        <ul className="space-y-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <li key={item.name}>
+                <Link
+                  to={item.path}
+                  onClick={onNavClick}
+                  className={`
+                    flex items-center w-full px-4 py-3
+                    hover:bg-slate-700
+                    ${isOpen ? "" : "justify-center"}
+                  `}
+                >
+                  <Icon size={20} className={isOpen ? "mr-3" : ""} />
+                  {isOpen && <span>{item.name}</span>}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      {/* User Section */}
+      {isOpen && (
+        <div className="p-4 border-t border-slate-700">
+          <div className="flex items-center">
+            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center mr-3">
+              <span className="font-medium">JD</span>
+            </div>
+            <div>
+              <p className="font-medium">Godbless Nyagawa</p>
+              <p className="text-sm text-slate-400">Administrator</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </aside>
+  );
+};
+
+// Navbar Component
+const Navbar = ({ pageTitle, toggleSidebar, toggleMobileMenu }) => {
+  return (
+    <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 md:px-6">
+      <div className="flex items-center">
+        {/* Mobile Menu Button */}
+        <button
+          onClick={toggleMobileMenu}
+          className="mr-4 p-1 rounded-md hover:bg-slate-100 md:hidden focus:outline-none"
+        >
+          <Menu size={24} />
+        </button>
+
+        {/* Desktop Toggle Button */}
+        <button
+          onClick={toggleSidebar}
+          className="mr-4 p-1 rounded-md hover:bg-slate-100 hidden md:block focus:outline-none"
+        >
+          <Menu size={24} />
+        </button>
+
+        <h1 className="text-xl font-semibold text-slate-800">{pageTitle}</h1>
+      </div>
+
+      {/* Search Bar */}
+      <div className="hidden md:flex items-center max-w-xs w-full relative mx-4">
+        <Search size={18} className="absolute left-3 text-slate-400" />
+        <input
+          type="text"
+          placeholder="Search..."
+          className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+        />
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex items-center">
+        {/* Notifications */}
+        <button className="p-2 rounded-full hover:bg-slate-100 relative mr-2">
+          <Bell size={20} />
+          <span className="absolute top-1 right-1 w-2 h-2 bg-blue-600 rounded-full"></span>
+        </button>
+
+        {/* User Avatar */}
+        <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white">
+          <span className="font-medium">JD</span>
+        </div>
+      </div>
+    </header>
+  );
+};
