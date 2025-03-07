@@ -1,5 +1,7 @@
 const { BAD_REQUEST } = require("../../constants/apiResponse");
 
+const mongoose = require("mongoose");
+
 const validateVenueCreate = async (req, res, next) => {
   const {
     abbreviation,
@@ -8,10 +10,10 @@ const validateVenueCreate = async (req, res, next) => {
     description,
     equipment,
     name,
-    status,
+    venueNumber,
   } = req.body;
 
-  // validate
+  // get user is from userId
   if (
     !abbreviation ||
     !block ||
@@ -19,23 +21,39 @@ const validateVenueCreate = async (req, res, next) => {
     !description ||
     !equipment ||
     !name ||
-    !status
+    !venueNumber
   ) {
-    return res.status(BAD_REQUEST).json({ message: "All fields are required" });
+    return res.status(BAD_REQUEST).json({
+      message:
+        "All fields are required, venue info abbreviation, block, capacity, description, equipment and venueNumber, name",
+    });
   }
 
-  // validate numbers(capacity)
-  if (typeof capacity !== "number") {
+  // const userId = req.user && req.user._id;
+
+  const parsedCapacity = Number(capacity);
+  if (isNaN(parsedCapacity)) {
     return res.status(BAD_REQUEST).json({ message: "Enter valid capacity!" });
   }
 
-  if (capacity <= 0) {
+  const parsedVenueNumber = Number(venueNumber);
+
+  if (isNaN(parsedVenueNumber)) {
+    return res
+      .status(BAD_REQUEST)
+      .json({ message: "Enter valid venue number!" });
+  }
+
+  if (parsedCapacity <= 0) {
     return res.status(BAD_REQUEST).json({
       message: "Enter valid capacity!, capacity should be greater than zero!",
     });
   }
 
-  // validate length
+  /* if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(BAD_REQUEST).json({ message: "Invalid user ID" });
+  } */
+
   if (description.length > 500) {
     return res.status(BAD_REQUEST).json({
       message: "Description should not be greater than 500 characters",
@@ -44,20 +62,20 @@ const validateVenueCreate = async (req, res, next) => {
 
   if (block.length > 100) {
     return res.status(BAD_REQUEST).json({
-      message: "Block should not be greater than 20 characters",
+      message: "Block should not be greater than 100 characters",
     });
   }
 
   if (abbreviation.length > 20) {
     return res.status(BAD_REQUEST).json({
-      message: "Abbreaviation should be short not be more than 20 characters",
+      message: "Abbreviation should not be more than 20 characters",
     });
   }
-  // validate status
 
-  // name
-  if (name.length < 2 || name === "" || name.trim === "") {
-    return res.status(BAD_REQUEST).json({ message: "Name should be empty" });
+  if (name.length < 2 || name.trim() === "") {
+    return res
+      .status(BAD_REQUEST)
+      .json({ message: "Name should be at least 2 characters and not empty" });
   }
 
   next();

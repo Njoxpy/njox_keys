@@ -29,12 +29,12 @@ orderRoutes.get("/:id", validateObjectId, getOrder);
 orderRoutes.get("/status", getOrderStatus); // Adjusted this route for status filtering
 
 // PUT: Update the status of an order (approved, rejected, etc.)
-orderRoutes.put("/:id/status", validateObjectId, updateOrderStatus);
+orderRoutes.put("/status/:id/", validateObjectId, updateOrderStatus);
 
 // DELETE: Delete an order
 orderRoutes.delete("/:id", validateObjectId, deleteOrder);
 
 // PUT: Return keys (update status and venue availability)
-orderRoutes.put("/:id/return", validateObjectId, returnKeys);
+orderRoutes.put("/return/:id/", validateObjectId, returnKeys);
 
 module.exports = orderRoutes;

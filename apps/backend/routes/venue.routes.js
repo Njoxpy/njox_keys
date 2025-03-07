@@ -7,6 +7,9 @@ const {
   getVenue,
   deleteVenue,
   getVenuesListCount,
+  getVenueStatus,
+  updateVenue,
+  updateVenueStatus,
 } = require("../controllers/venue.controller");
 
 // middleware
@@ -19,22 +22,25 @@ const {
   SERVER_ERROR,
   CREATED,
   BAD_REQUEST,
+  OK,
 } = require("../constants/apiResponse");
 
 // models
 const Venue = require("../models/venue.model");
 
-// create
+// Get all venues
 venueRoutes.get("/", getAllVenues);
 
+// Get a specific venue by ID
 venueRoutes.get("/:id", validateObjectId, getVenue);
 
-// delete
+// Delete a venue
 venueRoutes.delete("/:id", validateObjectId, deleteVenue);
 
+// Route to create a new venue with image uploads
 venueRoutes.post(
   "/",
-  upload.single("image"),
+  upload.array("images", 3), // Allow up to 3 images
   validateVenueCreate,
   async (req, res) => {
     try {
@@ -46,17 +52,40 @@ venueRoutes.post(
         equipment,
         name,
         status,
+        venueNumber,
       } = req.body;
 
-      // check if there a venue with that name
+      // Check if a venue with the same name already exists
       const venueExists = await Venue.findOne({ name });
-
       if (venueExists) {
         return res
           .status(BAD_REQUEST)
-          .json({ message: "Venue with that name exists!" });
+          .json({ message: "Venue with that name already exists!" });
       }
 
+      // user id = req.user && req.user._id
+      const venueNumberExists = await Venue.findOne({ venueNumber });
+
+      if (venueNumberExists) {
+        return res
+          .status(BAD_REQUEST)
+          .json({ message: "Venue with that number already exists!" });
+      }
+
+      // Check if files were uploaded
+      const files = req.files;
+      if (!files || files.length === 0) {
+        return res
+          .status(BAD_REQUEST)
+          .json({ message: "No files were uploaded" });
+      }
+
+      const userId = "67c7e527d5b2c7ba9f6c319e";
+
+      // Save file paths to associate with the venue
+      const imagePaths = files.map((file) => file.path);
+
+      // Create the new venue with image paths
       const newVenue = await Venue.create({
         abbreviation,
         block,
@@ -65,10 +94,19 @@ venueRoutes.post(
         equipment,
         name,
         status,
+        userId,
+        venueNumber,
+        images: imagePaths, // Save image paths in the venue document
       });
 
-      res.status(CREATED).json(newVenue);
+      // Respond with the created venue
+      res.status(CREATED).json({
+        sucess: true,
+        message: "Venue created successfully!",
+        venue: newVenue,
+      });
     } catch (error) {
+      console.error("Error creating venue:", error);
       res.status(SERVER_ERROR).json({
         message: "Server error, failed to add venue!",
         error: error.message,
@@ -77,8 +115,9 @@ venueRoutes.post(
   }
 );
 
-// update
+// update status(employee only), all admin
+venueRoutes.patch("/:id", validateObjectId, updateVenue);
 
-// rendering venues based on the status such as booked, available
+venueRoutes.put("/:id/status", validateObjectId, updateVenueStatus);
 
 module.exports = venueRoutes;

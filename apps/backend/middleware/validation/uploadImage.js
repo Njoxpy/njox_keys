@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 
 // Define the upload directory
-const uploadDir = path.join(__dirname, "../uploads");
+const uploadDir = path.join(__dirname, "../../uploads");
 
 // Ensure the directory exists
 if (!fs.existsSync(uploadDir)) {

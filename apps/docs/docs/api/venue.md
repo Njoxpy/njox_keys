@@ -17,7 +17,50 @@
 
 ---
 
-### **1. GET `/api/v1/venues`** - Get All Venues
+### **1. GET `/api/v1/venues/status`** - Get venue based on the status of the venue which can be either booked or available
+
+- **Description**: Retrieves a list of all venues based on status.
+
+- **Response**:
+
+```json
+[
+  {
+    "_id": "67b7790a0f5d006d5c2877a0",
+    "abbreviation": "ABC",
+    "block": "Main St Block A1234567890",
+    "capacity": 350,
+    "description": "This is an example description of a venue.",
+    "equipment": [
+      "Projector",
+      "Microphone"
+    ],
+    "images": [],
+    "name": "New lecture hall 1",
+    "status": "available",
+    "__v": 0
+  },
+  {
+    "_id": "67b779150f5d006d5c2877a2",
+    "abbreviation": "ABC",
+    "block": "Main St Block A1234567890",
+    "capacity": 350,
+    "description": "This is an example description of a venue.",
+    "equipment": [
+      "Projector",
+      "Microphone"
+    ],
+    "images": [],
+    "name": "New lecture hall 2",
+    "status": "available",
+    "__v": 0
+  }
+]
+```
+
+---
+
+### **2. GET `/api/v1/venues`** - Get All Venues
 
 - **Description**: Retrieves a list of all venues.
 

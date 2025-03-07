@@ -1,9 +1,6 @@
 // models
 const Venue = require("../models/venue.model");
 
-// redis
-const redis = require("../config/redisClient");
-
 // response
 const {
   OK,
@@ -15,23 +12,11 @@ const {
 // read
 const getAllVenues = async (req, res) => {
   try {
-    // create cache key for venues
-    const cacheKey = "venues";
-
-    const cachedData = await redis.get(cacheKey);
-
-    if (cachedData) {
-      console.log(`cache hit`);
-      return res.status(OK).json(JSON.parse(cachedData));
-    }
     const venues = await Venue.find().sort({ createdAt: -1 });
 
     if (venues.length === 0) {
       return res.status(NOT_FOUND).json({ message: "There no venues for now" });
     }
-
-    await redis.set(cacheKey, JSON.stringify(venues), "EX", 3600);
-    console.log("I have cached now!");
 
     res.status(OK).json(venues);
   } catch (error) {
@@ -51,6 +36,7 @@ const getVenue = async (req, res) => {
     if (!venue) {
       return res.status(NOT_FOUND).json({ message: "Venue not found" });
     }
+
     res.status(OK).json(venue);
   } catch (error) {
     res.status(SERVER_ERROR).json({
@@ -60,7 +46,7 @@ const getVenue = async (req, res) => {
   }
 };
 
-// updatehttp://localhost:3000/api/v1/status?status=available
+// update http://localhost:3000/api/v1/status?status=available
 
 // delete
 const deleteVenue = async (req, res) => {
@@ -72,6 +58,7 @@ const deleteVenue = async (req, res) => {
     if (!deletedVenue) {
       return res.status(NOT_FOUND).json({ message: "Venue not found" });
     }
+
     res.status(OK).json({ message: "Deleted sucessfully", deletedVenue });
   } catch (error) {
     res.status(SERVER_ERROR).json({
@@ -83,33 +70,86 @@ const deleteVenue = async (req, res) => {
 
 const updateVenue = async (req, res) => {
   try {
-    // check venue if exists or not
+    // Extract venue ID from request parameters
     const { id } = req.params;
-    const { name } = req.body;
+    const {
+      name,
+      abbreviation, // Fixed typo
+      block,
+      capacity,
+      venueNumber,
+      description,
+      status, // Fixed typo
+    } = req.body;
 
-    const exists = await Venue.findById(id);
-
-    if (!exists) {
-      return res.status(NOT_FOUND).json({ message: "Product not found" });
+    // Check if venue exists
+    const venue = await Venue.findById(id);
+    if (!venue) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Venue not found" });
     }
 
-    // check venue name
-    const venueExists = await Venue.findOne({ name });
+    // Validate required string fields (name, block, abbreviation, description)
+    const requiredFields = { name, abbreviation, block, description };
+    for (const [key, value] of Object.entries(requiredFields)) {
+      if (value !== undefined && value.trim() === "") {
+        return res.status(400).json({
+          success: false,
+          message: `${key} cannot be empty!`,
+        });
+      }
+    }
 
-    if (venueExists) {
-      return res.status(BAD_REQUEST).json({
-        sucess: false,
-        message: "Venue with that name already exist!",
+    // Check if venue name is already taken (excluding current venue)
+    if (name) {
+      const existingVenue = await Venue.findOne({ name, _id: { $ne: id } });
+      if (existingVenue) {
+        return res.status(400).json({
+          success: false,
+          message: "Venue with that name already exists!",
+        });
+      }
+    }
+
+    // Validate numeric fields (capacity & venueNumber must be positive numbers)
+    if (
+      capacity !== undefined &&
+      (!Number.isInteger(capacity) || capacity <= 0)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Capacity must be a positive integer!",
+      });
+    }
+
+    if (
+      venueNumber !== undefined &&
+      (!Number.isInteger(venueNumber) || venueNumber <= 0)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Venue number must be a positive integer!",
+      });
+    }
+
+    // Validate status field (should be a valid enum value)
+    const validStatuses = ["available", "booked"];
+    if (status !== undefined && !validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid status! Allowed values: ${validStatuses.join(", ")}`,
       });
     }
 
     const updatedVenue = await Venue.findByIdAndUpdate(id, req.body, {
       new: true,
+      runValidators: true,
     });
 
-    res.status(OK).json(updatedVenue);
+    res.status(200).json({ success: true, data: updatedVenue });
   } catch (error) {
-    res.status(SERVER_ERROR).json({ error: error.message });
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 
@@ -125,6 +165,7 @@ const updateVenueStatus = async (req, res) => {
         .status(NOT_FOUND)
         .json({ message: "Venue status not available" });
     }
+
     if (!exists) {
       return res.status(NOT_FOUND).json({ message: "Venue not found" });
     }

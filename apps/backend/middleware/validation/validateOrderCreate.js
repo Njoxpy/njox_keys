@@ -12,8 +12,10 @@ const validateOrderCreate = async (req, res, next) => {
   const { venueId, status } = req.body;
 
   // Validate required fields
-  if (!venueId ) {
-    return res.status(BAD_REQUEST).json({ message: "Fill all fields! Venue ID is required." });
+  if (!venueId) {
+    return res
+      .status(BAD_REQUEST)
+      .json({ message: "Fill all fields! Venue ID is required." });
   }
 
   // Validate if venueId is a valid ObjectId
@@ -21,8 +23,8 @@ const validateOrderCreate = async (req, res, next) => {
     return res.status(NOT_FOUND).json({ message: "Invalid Venue ID." });
   }
 
-  if(!["pending", "approved", "rejected"]){
-    return res.status(BAD_REQUEST).json({message: "Order status not valid"})
+  if (!["pending", "approved", "rejected"]) {
+    return res.status(BAD_REQUEST).json({ message: "Order status not valid" });
   }
 
   // Check if venue exists
@@ -33,13 +35,17 @@ const validateOrderCreate = async (req, res, next) => {
 
   // Check venue status
   if (venue.status !== "available") {
-    return res.status(BAD_REQUEST).json({ message: "Venue is alreday booked." });
+    return res
+      .status(BAD_REQUEST)
+      .json({ message: "Venue is alreday booked." });
   }
 
   // Check for existing order
   const existingOrder = await Order.findOne({ venueId });
   if (existingOrder) {
-    return res.status(BAD_REQUEST).json({ message: "Venue is already booked." });
+    return res
+      .status(BAD_REQUEST)
+      .json({ message: "Venue is already booked." });
   }
 
   // Forward request

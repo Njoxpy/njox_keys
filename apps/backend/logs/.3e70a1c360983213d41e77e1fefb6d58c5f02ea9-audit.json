@@ -1,0 +1,20 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "C:\\projects\\key management system\\apps\\backend\\logs\\.3e70a1c360983213d41e77e1fefb6d58c5f02ea9-audit.json",
+    "files": [
+        {
+            "date": 1741207023967,
+            "name": "C:\\projects\\key management system\\apps\\backend\\logs\\2025-03-05-access.log",
+            "hash": "a2a83f36f35bad9f2536f22b9da2e1c8ea434c165dd5c211242f450be3fbd33d"
+        },
+        {
+            "date": 1741274638886,
+            "name": "C:\\projects\\key management system\\apps\\backend\\logs\\2025-03-06-access.log",
+            "hash": "4b1cb6febd4ec13ad58a8408859b81c5822d576ce662a67754947cbbce3b0d3f"
+        }
+    ],
+    "hashType": "sha256"
+}

@@ -3,6 +3,7 @@ const {
   NOT_FOUND,
   OK,
   BAD_REQUEST,
+  CREATED,
 } = require("../constants/apiResponse");
 
 // Models
@@ -30,7 +31,9 @@ const createOrder = async (req, res) => {
     await venue.save();
 
     // Respond with success
-    res.status(OK).json({ message: "Order created successfully", newOrder });
+    res
+      .status(CREATED)
+      .json({ message: "Order created successfully", newOrder });
   } catch (error) {
     // Handle any errors
     res.status(SERVER_ERROR).json({ error: error.message });

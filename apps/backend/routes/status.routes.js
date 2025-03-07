@@ -33,6 +33,6 @@ venueRoutes.get("/venues", async (req, res) => {
   }
 });
 
-
+// http://localhost:3000/api/v1/status/venues?status=available
 
 module.exports = venueRoutes;
