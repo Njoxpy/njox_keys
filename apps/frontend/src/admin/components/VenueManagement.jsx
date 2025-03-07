@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -10,135 +10,126 @@ import {
   Clock,
   Upload,
   Save,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
-import Venue from "../.././assets/venue.jpg";
+const baseURL = "http://localhost:3000"; // Base URL for fetching images
 
 const VenuesManagement = () => {
-  const [venues, setVenues] = useState([
-    {
-      id: 1,
-      name: "Grand Conference Hall",
-      image: Venue,
-      capacity: 250,
-      location: "Downtown",
-      hourlyRate: 150,
-      amenities: ["Wi-Fi", "Projector", "Sound System", "Catering"],
-      availability: "Available",
-    },
-    {
-      id: 2,
-      name: "Studio Workshop Space",
-      image: Venue,
-      capacity: 30,
-      location: "East Wing",
-      hourlyRate: 75,
-      amenities: ["Whiteboard", "Tables", "Wi-Fi"],
-      availability: "Booked",
-    },
-    {
-      id: 3,
-      name: "Executive Meeting Room",
-      image: Venue,
-      capacity: 15,
-      location: "North Tower",
-      hourlyRate: 95,
-      amenities: ["Video Conferencing", "Coffee Bar", "Wi-Fi"],
-      availability: "Available",
-    },
-    {
-      id: 4,
-      name: "Auditorium",
-      image: Venue,
-      capacity: 400,
-      location: "South Campus",
-      hourlyRate: 220,
-      amenities: ["Stage", "Premium Sound", "Lighting", "Wi-Fi"],
-      availability: "Maintenance",
-    },
-    {
-      id: 5,
-      name: "Training Room A",
-      image: Venue,
-      capacity: 50,
-      location: "West Building",
-      hourlyRate: 85,
-      amenities: ["Computers", "Whiteboard", "Wi-Fi"],
-      availability: "Available",
-    },
-    {
-      id: 6,
-      name: "Outdoor Pavilion",
-      image: Venue,
-      capacity: 120,
-      location: "Garden Area",
-      hourlyRate: 110,
-      amenities: ["Weather Protection", "Picnic Tables", "Power Outlets"],
-      availability: "Available",
-    },
-  ]);
-
+  const [venues, setVenues] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentVenue, setCurrentVenue] = useState(null);
   const [venueToDelete, setVenueToDelete] = useState(null);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(6); // Number of items per page
+
   // Form state
   const [formData, setFormData] = useState({
-    name: "",
+    abbreviation: "",
+    block: "",
     capacity: "",
-    location: "",
-    hourlyRate: "",
-    amenities: "",
-    availability: "Available",
+    venueNumber: "",
+    description: "",
+    equipment: "",
+    images: [],
+    name: "",
+    status: "available",
   });
 
+  // Fetch venues from the API
+  useEffect(() => {
+    const fetchVenues = async () => {
+      try {
+        const response = await fetch(`${baseURL}/api/v1/venues`);
+        const data = await response.json();
+        setVenues(data);
+      } catch (error) {
+        console.error("Error fetching venues:", error);
+      }
+    };
+
+    fetchVenues();
+  }, []);
+
+  // Handle search input change
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to the first page when searching
   };
 
+  // Filter venues based on search query
   const filteredVenues = venues.filter((venue) =>
     venue.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentVenues = filteredVenues.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Handle adding a new venue
   const handleAddVenue = () => {
     setFormData({
-      name: "",
+      abbreviation: "",
+      block: "",
       capacity: "",
-      location: "",
-      hourlyRate: "",
-      amenities: "",
-      availability: "Available",
+      venueNumber: "",
+      description: "",
+      equipment: "",
+      images: [],
+      name: "",
+      status: "available",
     });
     setCurrentVenue(null);
     setIsModalOpen(true);
   };
 
+  // Handle editing a venue
   const handleEditVenue = (venue) => {
     setFormData({
-      name: venue.name,
+      abbreviation: venue.abbreviation,
+      block: venue.block,
       capacity: venue.capacity,
-      location: venue.location,
-      hourlyRate: venue.hourlyRate,
-      amenities: venue.amenities.join(", "),
-      availability: venue.availability,
+      venueNumber: venue.venueNumber,
+      description: venue.description,
+      equipment: venue.equipment.join(", "),
+      images: venue.images,
+      name: venue.name,
+      status: venue.status,
     });
     setCurrentVenue(venue);
     setIsModalOpen(true);
   };
 
+  // Handle delete confirmation prompt
   const handleDeletePrompt = (venue) => {
     setVenueToDelete(venue);
     setIsDeleteModalOpen(true);
   };
 
-  const handleDeleteVenue = () => {
-    setVenues(venues.filter((venue) => venue.id !== venueToDelete.id));
-    setIsDeleteModalOpen(false);
-    setVenueToDelete(null);
+  // Handle deleting a venue
+  const handleDeleteVenue = async () => {
+    try {
+      await fetch(`${baseURL}/api/v1/venues/${venueToDelete._id}`, {
+        method: "DELETE",
+      });
+      setVenues(venues.filter((venue) => venue._id !== venueToDelete._id));
+      setIsDeleteModalOpen(false);
+      setVenueToDelete(null);
+    } catch (error) {
+      console.error("Error deleting venue:", error);
+    }
   };
 
+  // Handle input changes in the form
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -147,42 +138,66 @@ const VenuesManagement = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  // Handle form submission (add/edit venue)
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newVenue = {
-      id: currentVenue ? currentVenue.id : venues.length + 1,
-      name: formData.name,
-      image: Venue, // Placeholder image for new venues
+      abbreviation: formData.abbreviation,
+      block: formData.block,
       capacity: parseInt(formData.capacity),
-      location: formData.location,
-      hourlyRate: parseInt(formData.hourlyRate),
-      amenities: formData.amenities.split(",").map((item) => item.trim()),
-      availability: formData.availability,
+      venueNumber: parseInt(formData.venueNumber),
+      description: formData.description,
+      equipment: formData.equipment.split(",").map((item) => item.trim()),
+      images: formData.images,
+      name: formData.name,
+      status: formData.status,
     };
 
-    if (currentVenue) {
-      // Edit existing venue
-      setVenues(
-        venues.map((venue) => (venue.id === currentVenue.id ? newVenue : venue))
-      );
-    } else {
-      // Add new venue
-      setVenues([...venues, newVenue]);
+    try {
+      if (currentVenue) {
+        // Edit existing venue
+        const response = await fetch(
+          `${baseURL}/api/v1/venues/${currentVenue._id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(newVenue),
+          }
+        );
+        const updatedVenue = await response.json();
+        setVenues(
+          venues.map((venue) =>
+            venue._id === currentVenue._id ? updatedVenue : venue
+          )
+        );
+      } else {
+        // Add new venue
+        const response = await fetch(`${baseURL}/api/v1/venues`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newVenue),
+        });
+        const addedVenue = await response.json();
+        setVenues([...venues, addedVenue]);
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error saving venue:", error);
     }
-
-    setIsModalOpen(false);
   };
 
   // Function to determine status badge color
   const getStatusColor = (status) => {
     switch (status) {
-      case "Available":
+      case "available":
         return "bg-green-100 text-green-600";
-      case "Booked":
+      case "booked":
         return "bg-blue-100 text-blue-600";
-      case "Maintenance":
-        return "bg-orange-100 text-orange-600";
       default:
         return "bg-gray-100 text-gray-600";
     }
@@ -223,26 +238,26 @@ const VenuesManagement = () => {
       </div>
 
       {/* Venues Grid */}
-      {filteredVenues.length > 0 ? (
+      {currentVenues.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredVenues.map((venue) => (
+          {currentVenues.map((venue) => (
             <div
-              key={venue.id}
+              key={venue._id}
               className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow"
             >
               <div className="relative h-48">
                 <img
-                  src={venue.image}
+                  src={`${baseURL}${venue.images[0]}`} // Fetch image using baseURL
                   alt={venue.name}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-2 right-2">
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                      venue.availability
+                      venue.status
                     )}`}
                   >
-                    {venue.availability}
+                    {venue.status}
                   </span>
                 </div>
               </div>
@@ -253,7 +268,7 @@ const VenuesManagement = () => {
 
                 <div className="flex items-center text-slate-600 mb-2">
                   <MapPin size={16} className="mr-1" />
-                  <span className="text-sm">{venue.location}</span>
+                  <span className="text-sm">{venue.block}</span>
                 </div>
 
                 <div className="flex items-center text-slate-600 mb-2">
@@ -263,18 +278,20 @@ const VenuesManagement = () => {
 
                 <div className="flex items-center text-slate-600 mb-2">
                   <Clock size={16} className="mr-1" />
-                  <span className="text-sm">${venue.hourlyRate}/hour</span>
+                  <span className="text-sm">
+                    Venue Number: {venue.venueNumber}
+                  </span>
                 </div>
 
                 <div className="mt-3">
-                  <p className="text-xs text-slate-500 mb-1">Amenities:</p>
+                  <p className="text-xs text-slate-500 mb-1">Equipment:</p>
                   <div className="flex flex-wrap gap-1">
-                    {venue.amenities.map((amenity, index) => (
+                    {venue.equipment.map((item, index) => (
                       <span
                         key={index}
                         className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-full"
                       >
-                        {amenity}
+                        {item}
                       </span>
                     ))}
                   </div>
@@ -306,6 +323,24 @@ const VenuesManagement = () => {
         </div>
       )}
 
+      {/* Pagination */}
+      <div className="flex justify-center mt-8">
+        <button
+          onClick={() => paginate(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg mr-2 disabled:opacity-50"
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <button
+          onClick={() => paginate(currentPage + 1)}
+          disabled={indexOfLastItem >= filteredVenues.length}
+          className="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg disabled:opacity-50"
+        >
+          <ChevronRight size={18} />
+        </button>
+      </div>
+
       {/* Add/Edit Venue Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -326,12 +361,26 @@ const VenuesManagement = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Venue Name
+                    Abbreviation
                   </label>
                   <input
                     type="text"
-                    name="name"
-                    value={formData.name}
+                    name="abbreviation"
+                    value={formData.abbreviation}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Block
+                  </label>
+                  <input
+                    type="text"
+                    name="block"
+                    value={formData.block}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                     required
@@ -354,12 +403,12 @@ const VenuesManagement = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">
-                      Hourly Rate ($)
+                      Venue Number
                     </label>
                     <input
                       type="number"
-                      name="hourlyRate"
-                      value={formData.hourlyRate}
+                      name="venueNumber"
+                      value={formData.venueNumber}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                       required
@@ -369,12 +418,11 @@ const VenuesManagement = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Location
+                    Description
                   </label>
-                  <input
-                    type="text"
-                    name="location"
-                    value={formData.location}
+                  <textarea
+                    name="description"
+                    value={formData.description}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                     required
@@ -383,38 +431,37 @@ const VenuesManagement = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Amenities (comma separated)
+                    Equipment (comma separated)
                   </label>
                   <input
                     type="text"
-                    name="amenities"
-                    value={formData.amenities}
+                    name="equipment"
+                    value={formData.equipment}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                    placeholder="Wi-Fi, Projector, Tables"
+                    placeholder="Chairs, Whiteboard"
                     required
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Availability
+                    Status
                   </label>
                   <select
-                    name="availability"
-                    value={formData.availability}
+                    name="status"
+                    value={formData.status}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                   >
-                    <option value="Available">Available</option>
-                    <option value="Booked">Booked</option>
-                    <option value="Maintenance">Maintenance</option>
+                    <option value="available">Available</option>
+                    <option value="booked">Booked</option>
                   </select>
                 </div>
 
                 <div className="border-t border-slate-200 pt-4">
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Venue Image
+                    Venue Images
                   </label>
                   <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center">
                     <Upload size={24} className="mx-auto text-slate-400 mb-2" />
