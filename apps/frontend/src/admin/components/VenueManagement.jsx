@@ -12,12 +12,14 @@ import {
   Save,
 } from "lucide-react";
 
+import Venue from "../.././assets/venue.jpg";
+
 const VenuesManagement = () => {
   const [venues, setVenues] = useState([
     {
       id: 1,
       name: "Grand Conference Hall",
-      image: "/api/placeholder/800/500",
+      image: Venue,
       capacity: 250,
       location: "Downtown",
       hourlyRate: 150,
@@ -27,7 +29,7 @@ const VenuesManagement = () => {
     {
       id: 2,
       name: "Studio Workshop Space",
-      image: "/api/placeholder/800/500",
+      image: Venue,
       capacity: 30,
       location: "East Wing",
       hourlyRate: 75,
@@ -37,7 +39,7 @@ const VenuesManagement = () => {
     {
       id: 3,
       name: "Executive Meeting Room",
-      image: "/api/placeholder/800/500",
+      image: Venue,
       capacity: 15,
       location: "North Tower",
       hourlyRate: 95,
@@ -47,7 +49,7 @@ const VenuesManagement = () => {
     {
       id: 4,
       name: "Auditorium",
-      image: "/api/placeholder/800/500",
+      image: Venue,
       capacity: 400,
       location: "South Campus",
       hourlyRate: 220,
@@ -57,7 +59,7 @@ const VenuesManagement = () => {
     {
       id: 5,
       name: "Training Room A",
-      image: "/api/placeholder/800/500",
+      image: Venue,
       capacity: 50,
       location: "West Building",
       hourlyRate: 85,
@@ -67,7 +69,7 @@ const VenuesManagement = () => {
     {
       id: 6,
       name: "Outdoor Pavilion",
-      image: "/api/placeholder/800/500",
+      image: Venue,
       capacity: 120,
       location: "Garden Area",
       hourlyRate: 110,
@@ -151,7 +153,7 @@ const VenuesManagement = () => {
     const newVenue = {
       id: currentVenue ? currentVenue.id : venues.length + 1,
       name: formData.name,
-      image: "/api/placeholder/800/500", // Placeholder image for new venues
+      image: Venue, // Placeholder image for new venues
       capacity: parseInt(formData.capacity),
       location: formData.location,
       hourlyRate: parseInt(formData.hourlyRate),
