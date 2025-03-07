@@ -6,6 +6,8 @@ const {
   CREATED,
 } = require("../constants/apiResponse");
 
+const mongoose = require("mongoose");
+
 // Models
 const Order = require("../models/order.model");
 const Venue = require("../models/venue.model");
@@ -14,36 +16,63 @@ const Venue = require("../models/venue.model");
 const redis = require("../config/redisClient");
 
 const createOrder = async (req, res) => {
-  const { venueId } = req.body;
+  const { venueId, studentId, employeeId } = req.body;
 
   try {
-    // Check if the venue exists
-    const venue = await Venue.findById(venueId);
-    if (!venue) {
-      return res.status(NOT_FOUND).json({ message: "Venue not found" });
+    if (!venueId) {
+      return res.status(400).json({ message: "Venue ID is required" });
+    }
+    if (!studentId || !employeeId) {
+      return res
+        .status(400)
+        .json({ message: "Both Student ID and Employee ID are required" });
     }
 
-    // Create the order and set its status to 'completed'
-    const newOrder = await Order.create({ venueId, status: "approved" });
+    if (!mongoose.Types.ObjectId.isValid(employeeId)) {
+      return res.status(404).json({ message: "Invalid Employee ID." });
+    }
+    if (!mongoose.Types.ObjectId.isValid(studentId)) {
+      return res.status(404).json({ message: "Invalid Student ID." });
+    }
 
-    // Update venue status to "booked"
+    const venue = await Venue.findById(venueId);
+    if (!venue) {
+      return res.status(404).json({ message: "Venue not found" });
+    }
+
+    if (venue.status === "booked") {
+      return res.status(400).json({ message: "Venue is already booked" });
+    }
+
+    // Create the order and set its status to 'pending'
+    const newOrder = await Order.create({
+      venueId,
+      student: studentId,
+      employee: employeeId,
+      status: "pending",
+    });
+
     venue.status = "booked";
     await venue.save();
 
-    // Respond with success
-    res
-      .status(CREATED)
-      .json({ message: "Order created successfully", newOrder });
+    res.status(201).json({
+      message: "Order created successfully",
+      newOrder,
+    });
   } catch (error) {
-    // Handle any errors
-    res.status(SERVER_ERROR).json({ error: error.message });
+    res.status(500).json({
+      message: "An error occurred while creating the order.",
+      error: error.message,
+    });
   }
 };
 
 const getOrders = async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate("venueId")
+      .populate("venueId", "name status")
+      .populate("student", "registrationNumber yearOfStudy")
+      .populate("employee", "firstname lastname email")
       .sort({ createdAt: -1 });
 
     if (orders.length === 0) {

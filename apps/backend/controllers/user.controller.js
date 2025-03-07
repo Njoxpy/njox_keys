@@ -90,23 +90,63 @@ const updateUser = async (req, res) => {
     const { firstname, lastname, email, registrationNumber, password, role } =
       req.body;
 
-    const updatedUser = await User.findByIdAndUpdate(
-      id,
-      { new: true },
-      { ...req.body }
-    );
-
-    // check if regstation number exists and email exists for the update user: if yes return error
-
-    if (!updatedUser) {
-      return res.status(NOT_FOUND).json({ message: "User not found" });
+    // Check if any critical fields are empty
+    if (firstname && firstname.trim() === "") {
+      return res.status(400).json({ message: "First name cannot be empty!" });
     }
 
-    res.status(OK).json({ message: "Updated sucessfully!" });
+    if (lastname && lastname.trim() === "") {
+      return res.status(400).json({ message: "Last name cannot be empty!" });
+    }
+
+    if (email && email.trim() === "") {
+      return res.status(400).json({ message: "Email cannot be empty!" });
+    }
+
+    if (registrationNumber && registrationNumber.trim() === "") {
+      return res
+        .status(400)
+        .json({ message: "Registration number cannot be empty!" });
+    }
+
+    // Check if the updated email or registration number already exists (excluding the current user)
+    if (email) {
+      const emailExists = await User.findOne({ email, _id: { $ne: id } });
+      if (emailExists) {
+        return res.status(400).json({ message: "Email already exists!" });
+      }
+    }
+
+    if (registrationNumber) {
+      const regNumberExists = await User.findOne({
+        registrationNumber,
+        _id: { $ne: id },
+      });
+      if (regNumberExists) {
+        return res
+          .status(400)
+          .json({ message: "Registration number already exists!" });
+      }
+    }
+
+    // Update the user with the provided details
+    const updatedUser = await User.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "User updated successfully!",
+      updatedUser,
+    });
   } catch (error) {
-    res
-      .status(SERVER_ERROR)
-      .json({ message: "Failed to update user", error: error.message });
+    res.status(500).json({
+      message: "Failed to update user",
+      error: error.message,
+    });
   }
 };
 

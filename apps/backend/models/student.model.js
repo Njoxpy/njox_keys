@@ -7,18 +7,18 @@ const studentSchema = new mongoose.Schema(
       unique: [true, "Registration number alredy in use!"],
       validate: {
         validator: function (num) {
-          return /^\d{10}$/.test(num.toString());
+          return /^\d{14}$/.test(num.toString());
         },
-        message: "Registration number must be exactly 10 digits",
+        message: "Registration number must be exactly 14 digits",
       },
     },
     yearOfStudy: {
       type: String,
-      required: [true, "Enter regstration number"],
+      required: [true, "Enter year of study!"],
     },
   },
   { timestamps: true }
 );
 
-const Student = mongoose.model("Students", studentSchema);
+const Student = mongoose.model("Student", studentSchema);
 module.exports = Student;

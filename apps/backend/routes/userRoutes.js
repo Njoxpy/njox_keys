@@ -19,7 +19,7 @@ userRoutes.post("/", validateUserCreate, Signup);
 
 userRoutes.get("/", getUsers);
 
-userRoutes.get("/profile", validateObjectId, getUser);
+userRoutes.get("/:id", validateObjectId, getUser);
 
 userRoutes.put("/:id", validateObjectId, updateUser);
 

@@ -14,6 +14,11 @@
             "date": 1741274638886,
             "name": "C:\\projects\\key management system\\apps\\backend\\logs\\2025-03-06-access.log",
             "hash": "4b1cb6febd4ec13ad58a8408859b81c5822d576ce662a67754947cbbce3b0d3f"
+        },
+        {
+            "date": 1741328760327,
+            "name": "C:\\projects\\key management system\\apps\\backend\\logs\\2025-03-07-access.log",
+            "hash": "d05a825327bce8a0f1191886efd12e8758b6d6e48fdca1c6913eec9fc91e2f0c"
         }
     ],
     "hashType": "sha256"
