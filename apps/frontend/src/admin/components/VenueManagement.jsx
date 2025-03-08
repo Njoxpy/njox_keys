@@ -14,6 +14,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+import Venue from "../../assets/venue.jpg";
+
 const baseURL = "http://localhost:3000"; // Base URL for fetching images
 
 const VenuesManagement = () => {
@@ -247,7 +249,8 @@ const VenuesManagement = () => {
             >
               <div className="relative h-48">
                 <img
-                  src={`${baseURL}${venue.images[0]}`} // Fetch image using baseURL
+                  src={Venue} // Fetch image using baseURL
+                  // src={`${baseURL}${venue.images[0]}`} // Fetch image using baseURL
                   alt={venue.name}
                   className="w-full h-full object-cover"
                 />

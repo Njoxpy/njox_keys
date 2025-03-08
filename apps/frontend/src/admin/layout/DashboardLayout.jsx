@@ -11,6 +11,7 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  Book,
 } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 
@@ -84,6 +85,7 @@ const Sidebar = ({ isOpen, toggleSidebar, onNavClick, className }) => {
     { name: "Dashboard", path: "/admin/dashboard", icon: Home },
     { name: "Venues", path: "/admin/venues", icon: MapPin },
     { name: "Bookings", path: "/admin/bookings", icon: Calendar },
+    { name: "Reports", path: "/admin/reports", icon: Book },
     { name: "Users", path: "/admin/users", icon: Users },
     { name: "Students", path: "/admin/students", icon: BookOpen },
     { name: "Settings", path: "/admin/settings", icon: Settings },

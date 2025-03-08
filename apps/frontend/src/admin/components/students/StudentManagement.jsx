@@ -1,228 +1,440 @@
-import { useState } from "react";
-import { Plus, Trash, Search } from "lucide-react";
+import { useState, useEffect } from "react";
 
-export default function StudentsManagement() {
-  const [students, setStudents] = useState([
-    { id: 1, name: "John Doe", regNumber: "REG001", yearOfStudy: "Year 1" },
-    { id: 2, name: "Jane Smith", regNumber: "REG002", yearOfStudy: "Year 2" },
-    {
-      id: 3,
-      name: "Alice Johnson",
-      regNumber: "REG003",
-      yearOfStudy: "Year 3",
-    },
-    { id: 4, name: "Bob Brown", regNumber: "REG004", yearOfStudy: "Year 4" },
-    {
-      id: 5,
-      name: "Charlie Davis",
-      regNumber: "REG005",
-      yearOfStudy: "Year 1",
-    },
-    { id: 6, name: "Eve White", regNumber: "REG006", yearOfStudy: "Year 2" },
-  ]);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newStudent, setNewStudent] = useState({
-    name: "",
-    regNumber: "",
+const StudentsManagement = () => {
+  const [students, setStudents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [currentStudent, setCurrentStudent] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [formData, setFormData] = useState({
+    registrationNumber: "",
     yearOfStudy: "",
   });
-  const [searchQuery, setSearchQuery] = useState("");
+
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const studentsPerPage = 5;
+  const [studentsPerPage] = useState(10);
+  const [totalStudents, setTotalStudents] = useState(0);
 
-  const handleAddStudent = () => {
-    setStudents([...students, { id: students.length + 1, ...newStudent }]);
-    setIsModalOpen(false);
-    setNewStudent({ name: "", regNumber: "", yearOfStudy: "" });
+  useEffect(() => {
+    fetchStudents();
+  }, [currentPage]);
+
+  const fetchStudents = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/v1/students?page=${currentPage}&limit=${studentsPerPage}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch students");
+      const data = await response.json();
+
+      // Ensure we're setting an array to students state
+      if (data && data.data && Array.isArray(data.data)) {
+        setStudents(data.data);
+        setTotalStudents(data.totalCount || data.data.length);
+      } else if (Array.isArray(data)) {
+        setStudents(data);
+        setTotalStudents(data.length);
+      } else {
+        // If we get unexpected data structure, set an empty array
+        console.error("Unexpected API response structure:", data);
+        setStudents([]);
+        setTotalStudents(0);
+      }
+
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching students:", err);
+      setError(err.message);
+      setStudents([]); // Ensure students is always an array
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDeleteStudent = (id) => {
-    setStudents(students.filter((student) => student.id !== id));
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: name === "registrationNumber" ? value : value,
+    });
   };
 
-  const filteredStudents = students.filter((student) =>
-    student.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const resetForm = () => {
+    setFormData({
+      registrationNumber: "",
+      yearOfStudy: "",
+    });
+  };
 
-  const indexOfLastStudent = currentPage * studentsPerPage;
-  const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
-  const currentStudents = filteredStudents.slice(
-    indexOfFirstStudent,
-    indexOfLastStudent
-  );
+  const validateRegistrationNumber = (num) => {
+    return /^\d{10}$/.test(num.toString());
+  };
 
+  const handleAddStudent = async (e) => {
+    e.preventDefault();
+
+    if (!validateRegistrationNumber(formData.registrationNumber)) {
+      setError("Registration number must be exactly 10 digits");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3000/api/v1/students", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to add student");
+      }
+
+      await fetchStudents();
+      setShowAddModal(false);
+      resetForm();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleEditStudent = async (e) => {
+    e.preventDefault();
+
+    if (!validateRegistrationNumber(formData.registrationNumber)) {
+      setError("Registration number must be exactly 10 digits");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/v1/students/${currentStudent._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update student");
+      }
+
+      await fetchStudents();
+      setShowEditModal(false);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDeleteStudent = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/v1/students/${currentStudent._id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to delete student");
+
+      await fetchStudents();
+      setShowDeleteModal(false);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const openEditModal = (student) => {
+    setCurrentStudent(student);
+    setFormData({
+      registrationNumber: student.registrationNumber.toString(),
+      yearOfStudy: student.yearOfStudy,
+    });
+    setShowEditModal(true);
+  };
+
+  const openDeleteModal = (student) => {
+    setCurrentStudent(student);
+    setShowDeleteModal(true);
+  };
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Ensure students is an array before filtering
+  const filteredStudents = Array.isArray(students)
+    ? students.filter(
+        (student) =>
+          student.registrationNumber.toString().includes(searchTerm) ||
+          student.yearOfStudy.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : [];
+
+  // Pagination logic
+  const pageCount = Math.ceil(totalStudents / studentsPerPage);
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div className="p-6 bg-slate-50 min-h-screen">
-      <h1 className="text-2xl font-semibold text-slate-800 mb-6">
-        Students Management
-      </h1>
-
-      {/* Add Student Button and Search Bar */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-100 text-blue-600 px-4 py-2 rounded-md hover:bg-blue-200 flex items-center"
-        >
-          <Plus size={16} className="mr-2" />
-          Add Student
-        </button>
-
-        <div className="relative">
-          <Search size={18} className="absolute left-3 top-3 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-          />
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <h1 className="text-2xl font-bold text-slate-800">
+          Students Management
+        </h1>
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="relative flex-grow md:flex-grow-0">
+            <input
+              type="text"
+              placeholder="Search students..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+            />
+            <svg
+              className="absolute right-3 top-2.5 h-5 w-5 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+          <button
+            onClick={() => {
+              resetForm();
+              setShowAddModal(true);
+            }}
+            className="mt-4 md:mt-0 flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Add Student
+          </button>
         </div>
       </div>
 
-      {/* Students Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-slate-100">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-slate-700">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-slate-700">
-                Registration Number
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-slate-700">
-                Year of Study
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-slate-700">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {currentStudents.map((student) => (
-              <tr key={student.id}>
-                <td className="px-6 py-4 text-sm text-slate-800">
-                  {student.name}
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-800">
-                  {student.regNumber}
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-800">
-                  {student.yearOfStudy}
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-800">
-                  <button
-                    onClick={() => handleDeleteStudent(student.id)}
-                    className="bg-red-100 text-red-600 px-3 py-1 rounded-md hover:bg-red-200 flex items-center"
-                  >
-                    <Trash size={16} className="mr-2" />
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {error && (
+        <div className="bg-red-100 text-red-600 p-4 mb-4 rounded-md">
+          {error}
+        </div>
+      )}
 
-      {/* Pagination */}
-      <div className="flex justify-center mt-6">
-        {Array.from(
-          { length: Math.ceil(filteredStudents.length / studentsPerPage) },
-          (_, i) => (
-            <button
-              key={i + 1}
-              onClick={() => paginate(i + 1)}
-              className={`mx-1 px-4 py-2 rounded-md ${
-                currentPage === i + 1
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-slate-700 hover:bg-blue-100"
-              }`}
-            >
-              {i + 1}
-            </button>
-          )
-        )}
-      </div>
-
-      {/* Add Student Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-800 bg-opacity-50 flex items-center justify-center z-30">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-slate-800">
-                Add Student
-              </h2>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-slate-500 hover:text-slate-700"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleAddStudent();
-              }}
-            >
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    value={newStudent.name}
-                    onChange={(e) =>
-                      setNewStudent({ ...newStudent, name: e.target.value })
-                    }
-                    className="w-full border rounded-md px-3 py-2 mt-1"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700">
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full whitespace-nowrap">
+              <thead>
+                <tr className="bg-slate-100 text-slate-800">
+                  <th className="px-4 py-3 text-left font-semibold">
                     Registration Number
-                  </label>
-                  <input
-                    type="text"
-                    value={newStudent.regNumber}
-                    onChange={(e) =>
-                      setNewStudent({
-                        ...newStudent,
-                        regNumber: e.target.value,
-                      })
-                    }
-                    className="w-full border rounded-md px-3 py-2 mt-1"
-                    required
-                  />
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold">
+                    Year of Study
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold">
+                    Created At
+                  </th>
+                  <th className="px-4 py-3 text-right font-semibold">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredStudents.length > 0 ? (
+                  filteredStudents.map((student) => (
+                    <tr
+                      key={student._id}
+                      className="border-t border-gray-200 hover:bg-slate-50"
+                    >
+                      <td className="px-4 py-3">
+                        {student.registrationNumber}
+                      </td>
+                      <td className="px-4 py-3">{student.yearOfStudy}</td>
+                      <td className="px-4 py-3">
+                        {new Date(student.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex justify-end space-x-2">
+                          <button
+                            onClick={() => openEditModal(student)}
+                            className="bg-blue-100 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-200 transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => openDeleteModal(student)}
+                            className="bg-red-100 text-red-600 px-3 py-1 rounded-md hover:bg-red-200 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="4"
+                      className="px-4 py-8 text-center text-gray-500"
+                    >
+                      {searchTerm
+                        ? "No matching students found"
+                        : "No students found"}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {pageCount > 1 && (
+            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Showing{" "}
+                    <span className="font-medium">
+                      {(currentPage - 1) * studentsPerPage + 1}
+                    </span>{" "}
+                    to{" "}
+                    <span className="font-medium">
+                      {Math.min(currentPage * studentsPerPage, totalStudents)}
+                    </span>{" "}
+                    of <span className="font-medium">{totalStudents}</span>{" "}
+                    results
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700">
-                    Year of Study
-                  </label>
-                  <input
-                    type="text"
-                    value={newStudent.yearOfStudy}
-                    onChange={(e) =>
-                      setNewStudent({
-                        ...newStudent,
-                        yearOfStudy: e.target.value,
-                      })
-                    }
-                    className="w-full border rounded-md px-3 py-2 mt-1"
-                    required
-                  />
+                  <nav
+                    className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                    aria-label="Pagination"
+                  >
+                    <button
+                      onClick={() => paginate(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                        currentPage === 1
+                          ? "text-gray-300"
+                          : "text-gray-500 hover:bg-gray-50"
+                      }`}
+                    >
+                      Previous
+                    </button>
+
+                    {Array.from({ length: Math.min(5, pageCount) }, (_, i) => {
+                      let pageNum;
+                      if (pageCount <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= pageCount - 2) {
+                        pageNum = pageCount - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => paginate(pageNum)}
+                          className={`relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium ${
+                            currentPage === pageNum
+                              ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                              : "text-gray-500 hover:bg-gray-50"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+
+                    <button
+                      onClick={() =>
+                        paginate(Math.min(pageCount, currentPage + 1))
+                      }
+                      disabled={currentPage === pageCount}
+                      className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                        currentPage === pageCount
+                          ? "text-gray-300"
+                          : "text-gray-500 hover:bg-gray-50"
+                      }`}
+                    >
+                      Next
+                    </button>
+                  </nav>
                 </div>
               </div>
-              <div className="mt-6">
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Add Student Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-slate-800 text-white rounded-lg w-full max-w-md p-6">
+            <h2 className="text-xl font-semibold mb-4">Add New Student</h2>
+            <form onSubmit={handleAddStudent}>
+              <div className="mb-4">
+                <label className="block text-sm mb-1">
+                  Registration Number
+                </label>
+                <input
+                  type="number"
+                  name="registrationNumber"
+                  value={formData.registrationNumber}
+                  onChange={handleInputChange}
+                  className="w-full p-2 rounded text-slate-800"
+                  required
+                  pattern="\d{10}"
+                  title="Registration number must be exactly 10 digits"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Must be exactly 10 digits
+                </p>
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm mb-1">Year of Study</label>
+                <input
+                  type="text"
+                  name="yearOfStudy"
+                  value={formData.yearOfStudy}
+                  onChange={handleInputChange}
+                  className="w-full p-2 rounded text-slate-800"
+                  required
+                  placeholder="e.g. 2023/2024"
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
                 <button
                   type="submit"
-                  className="w-full bg-blue-100 text-blue-600 px-4 py-2 rounded-md hover:bg-blue-200"
+                  className="px-4 py-2 bg-blue-100 text-blue-600 rounded-md hover:bg-blue-200"
                 >
                   Add Student
                 </button>
@@ -231,6 +443,92 @@ export default function StudentsManagement() {
           </div>
         </div>
       )}
+
+      {/* Edit Student Modal */}
+      {showEditModal && currentStudent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-slate-800 text-white rounded-lg w-full max-w-md p-6">
+            <h2 className="text-xl font-semibold mb-4">Edit Student</h2>
+            <form onSubmit={handleEditStudent}>
+              <div className="mb-4">
+                <label className="block text-sm mb-1">
+                  Registration Number
+                </label>
+                <input
+                  type="number"
+                  name="registrationNumber"
+                  value={formData.registrationNumber}
+                  onChange={handleInputChange}
+                  className="w-full p-2 rounded text-slate-800"
+                  required
+                  pattern="\d{10}"
+                  title="Registration number must be exactly 10 digits"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Must be exactly 10 digits
+                </p>
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm mb-1">Year of Study</label>
+                <input
+                  type="text"
+                  name="yearOfStudy"
+                  value={formData.yearOfStudy}
+                  onChange={handleInputChange}
+                  className="w-full p-2 rounded text-slate-800"
+                  required
+                  placeholder="e.g. 2023/2024"
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-100 text-blue-600 rounded-md hover:bg-blue-200"
+                >
+                  Update Student
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && currentStudent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-slate-800 text-white rounded-lg w-full max-w-md p-6">
+            <h2 className="text-xl font-semibold mb-4">Confirm Delete</h2>
+            <p className="mb-6">
+              Are you sure you want to delete student with registration number{" "}
+              {currentStudent.registrationNumber}? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteStudent}
+                className="px-4 py-2 bg-red-100 text-red-600 rounded-md hover:bg-red-200"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default StudentsManagement;

@@ -9,6 +9,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const DashboardOverview = () => {
   // Sample data for the metrics
@@ -60,7 +61,7 @@ const DashboardOverview = () => {
           Dashboard Overview
         </h1>
         <p className="text-slate-600">
-          Welcome back! Here's a summary of your business metrics.
+          Welcome back! Here's a summary of your venue metrics.
         </p>
       </div>
 
@@ -252,10 +253,11 @@ const DashboardOverview = () => {
               );
             })}
           </div>
-
-          <button className="w-full mt-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors">
-            View Full Report
-          </button>
+          <Link to={"/admin/reports"}>
+            <button className="w-full mt-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors">
+              View Full Report
+            </button>
+          </Link>
         </div>
       </div>
     </div>

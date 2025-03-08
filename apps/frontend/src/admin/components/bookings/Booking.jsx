@@ -1,299 +1,293 @@
-import { useState } from "react";
-import { Search, Check, X, ChevronUp, ChevronDown } from "lucide-react";
+import React, { useState } from "react";
+import { Search, Filter, Check, X } from "lucide-react";
 
-export default function BookingsManagement() {
+const BookingsManagement = () => {
+  // Sample bookings data based on the provided structure
   const [bookings, setBookings] = useState([
     {
       _id: "67c89622f11980648a0f3389",
       venueId: {
         _id: "67c5934c205b559f79d9e632",
+        abbreviation: "JJ10",
+        block: "Block J",
+        capacity: 60,
         name: "Discussion Room12",
+        status: "available",
       },
       userId: "67c7e7a43484815840aa4d31",
+      studentName: "Alice Johnson", // Added for display purposes
+      bookingDate: "2025-03-15", // Added for display purposes
       status: "approved",
       createdAt: "2025-03-05T18:21:22.299Z",
+      updatedAt: "2025-03-05T18:21:22.299Z",
     },
     {
       _id: "67c89622f11980648a0f3390",
       venueId: {
         _id: "67c5934c205b559f79d9e633",
-        name: "Conference Hall A",
+        abbreviation: "KL05",
+        block: "Block K",
+        capacity: 30,
+        name: "Seminar Room 5",
+        status: "available",
       },
       userId: "67c7e7a43484815840aa4d32",
+      studentName: "Bob Smith", // Added for display purposes
+      bookingDate: "2025-03-18", // Added for display purposes
       status: "pending",
-      createdAt: "2025-03-04T12:15:10.299Z",
+      createdAt: "2025-03-06T10:15:42.299Z",
+      updatedAt: "2025-03-06T10:15:42.299Z",
     },
     {
       _id: "67c89622f11980648a0f3391",
       venueId: {
         _id: "67c5934c205b559f79d9e634",
-        name: "Workshop Room B",
+        abbreviation: "LL20",
+        block: "Block L",
+        capacity: 100,
+        name: "Lecture Hall 2",
+        status: "available",
       },
       userId: "67c7e7a43484815840aa4d33",
+      studentName: "Charlie Davis", // Added for display purposes
+      bookingDate: "2025-03-20", // Added for display purposes
       status: "rejected",
-      createdAt: "2025-03-06T09:45:30.299Z",
+      createdAt: "2025-03-06T14:30:10.299Z",
+      updatedAt: "2025-03-06T14:30:10.299Z",
     },
-    // Add more sample data here
+    {
+      _id: "67c89622f11980648a0f3392",
+      venueId: {
+        _id: "67c5934c205b559f79d9e635",
+        abbreviation: "MM01",
+        block: "Block M",
+        capacity: 25,
+        name: "Meeting Room 1",
+        status: "available",
+      },
+      userId: "67c7e7a43484815840aa4d34",
+      studentName: "Diana Williams", // Added for display purposes
+      bookingDate: "2025-03-22", // Added for display purposes
+      status: "pending",
+      createdAt: "2025-03-07T09:45:22.299Z",
+      updatedAt: "2025-03-07T09:45:22.299Z",
+    },
   ]);
 
-  const [filter, setFilter] = useState("all"); // Filter by status
-  const [searchQuery, setSearchQuery] = useState(""); // Search by venue name
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" }); // Sorting
-  const [currentPage, setCurrentPage] = useState(1); // Pagination
-  const bookingsPerPage = 5; // Number of bookings per page
+  // State for search and filter
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  // Handle Approve
-  const handleApprove = (id) => {
+  // Function to handle status change
+  const handleStatusChange = (bookingId, newStatus) => {
     setBookings(
       bookings.map((booking) =>
-        booking._id === id ? { ...booking, status: "approved" } : booking
+        booking._id === bookingId ? { ...booking, status: newStatus } : booking
       )
     );
   };
 
-  // Handle Reject
-  const handleReject = (id) => {
-    setBookings(
-      bookings.map((booking) =>
-        booking._id === id ? { ...booking, status: "rejected" } : booking
-      )
-    );
-  };
-
-  // Filter bookings by status and search query
+  // Filter bookings based on search term and status filter
   const filteredBookings = bookings.filter((booking) => {
-    const matchesFilter = filter === "all" || booking.status === filter;
-    const matchesSearch = booking.venueId.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
+    const matchesSearch =
+      booking.venueId.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking.studentName.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesFilter =
+      statusFilter === "all" || booking.status === statusFilter;
+
+    return matchesSearch && matchesFilter;
   });
-
-  // Sort bookings
-  const sortedBookings = [...filteredBookings].sort((a, b) => {
-    if (sortConfig.key) {
-      if (a[sortConfig.key] < b[sortConfig.key]) {
-        return sortConfig.direction === "asc" ? -1 : 1;
-      }
-      if (a[sortConfig.key] > b[sortConfig.key]) {
-        return sortConfig.direction === "asc" ? 1 : -1;
-      }
-    }
-    return 0;
-  });
-
-  // Handle sorting
-  const handleSort = (key) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
-  };
-
-  // Pagination
-  const indexOfLastBooking = currentPage * bookingsPerPage;
-  const indexOfFirstBooking = indexOfLastBooking - bookingsPerPage;
-  const currentBookings = sortedBookings.slice(
-    indexOfFirstBooking,
-    indexOfLastBooking
-  );
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div className="p-6 bg-slate-50 min-h-screen">
-      <h1 className="text-2xl font-semibold text-slate-800 mb-6">
-        Bookings Management
-      </h1>
+    <div className="min-h-screen bg-slate-50">
+      <div className="container mx-auto px-4 py-6">
+        <h1 className="text-2xl font-bold text-slate-800 mb-6">
+          Bookings Management
+        </h1>
 
-      {/* Filters and Search Bar */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
-        {/* Filters */}
-        <div className="flex space-x-4">
-          <button
-            onClick={() => setFilter("all")}
-            className={`px-4 py-2 rounded-md ${
-              filter === "all"
-                ? "bg-blue-600 text-white"
-                : "bg-white text-slate-700 hover:bg-blue-100"
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setFilter("pending")}
-            className={`px-4 py-2 rounded-md ${
-              filter === "pending"
-                ? "bg-blue-600 text-white"
-                : "bg-white text-slate-700 hover:bg-blue-100"
-            }`}
-          >
-            Pending
-          </button>
-          <button
-            onClick={() => setFilter("approved")}
-            className={`px-4 py-2 rounded-md ${
-              filter === "approved"
-                ? "bg-blue-600 text-white"
-                : "bg-white text-slate-700 hover:bg-blue-100"
-            }`}
-          >
-            Approved
-          </button>
-          <button
-            onClick={() => setFilter("rejected")}
-            className={`px-4 py-2 rounded-md ${
-              filter === "rejected"
-                ? "bg-blue-600 text-white"
-                : "bg-white text-slate-700 hover:bg-blue-100"
-            }`}
-          >
-            Rejected
-          </button>
-        </div>
+        {/* Search and Filter Controls */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div className="relative w-full md:w-64">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-slate-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search venues or students..."
+              className="pl-10 pr-4 py-2 w-full border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
 
-        {/* Search Bar */}
-        <div className="relative">
-          <Search size={18} className="absolute left-3 top-3 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search by venue name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-          />
-        </div>
-      </div>
-
-      {/* Bookings Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-slate-100">
-            <tr>
-              <th
-                className="px-6 py-3 text-left text-sm font-medium text-slate-700 cursor-pointer"
-                onClick={() => handleSort("venueId.name")}
-              >
-                Venue
-                {sortConfig.key === "venueId.name" && (
-                  <span className="ml-2">
-                    {sortConfig.direction === "asc" ? (
-                      <ChevronUp size={16} />
-                    ) : (
-                      <ChevronDown size={16} />
-                    )}
-                  </span>
-                )}
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-slate-700">
-                Student ID
-              </th>
-              <th
-                className="px-6 py-3 text-left text-sm font-medium text-slate-700 cursor-pointer"
-                onClick={() => handleSort("createdAt")}
-              >
-                Date
-                {sortConfig.key === "createdAt" && (
-                  <span className="ml-2">
-                    {sortConfig.direction === "asc" ? (
-                      <ChevronUp size={16} />
-                    ) : (
-                      <ChevronDown size={16} />
-                    )}
-                  </span>
-                )}
-              </th>
-              <th
-                className="px-6 py-3 text-left text-sm font-medium text-slate-700 cursor-pointer"
-                onClick={() => handleSort("status")}
-              >
-                Status
-                {sortConfig.key === "status" && (
-                  <span className="ml-2">
-                    {sortConfig.direction === "asc" ? (
-                      <ChevronUp size={16} />
-                    ) : (
-                      <ChevronDown size={16} />
-                    )}
-                  </span>
-                )}
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-slate-700">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {currentBookings.map((booking) => (
-              <tr key={booking._id}>
-                <td className="px-6 py-4 text-sm text-slate-800">
-                  {booking.venueId.name}
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-800">
-                  {booking.userId}
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-800">
-                  {new Date(booking.createdAt).toLocaleDateString()}
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-800">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      booking.status === "pending"
-                        ? "bg-yellow-100 text-yellow-600"
-                        : booking.status === "approved"
-                        ? "bg-green-100 text-green-600"
-                        : "bg-red-100 text-red-600"
-                    }`}
-                  >
-                    {booking.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-800">
-                  {booking.status === "pending" && (
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleApprove(booking._id)}
-                        className="bg-blue-100 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-200 flex items-center"
-                      >
-                        <Check size={16} className="mr-2" />
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handleReject(booking._id)}
-                        className="bg-red-100 text-red-600 px-3 py-1 rounded-md hover:bg-red-200 flex items-center"
-                      >
-                        <X size={16} className="mr-2" />
-                        Reject
-                      </button>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex justify-center mt-6">
-        {Array.from(
-          { length: Math.ceil(filteredBookings.length / bookingsPerPage) },
-          (_, i) => (
+          <div className="flex space-x-2">
             <button
-              key={i + 1}
-              onClick={() => paginate(i + 1)}
-              className={`mx-1 px-4 py-2 rounded-md ${
-                currentPage === i + 1
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-slate-700 hover:bg-blue-100"
+              className={`px-4 py-2 rounded-md ${
+                statusFilter === "all"
+                  ? "bg-slate-800 text-white"
+                  : "bg-white text-slate-800 border border-slate-300"
               }`}
+              onClick={() => setStatusFilter("all")}
             >
-              {i + 1}
+              All
             </button>
-          )
-        )}
+            <button
+              className={`px-4 py-2 rounded-md ${
+                statusFilter === "pending"
+                  ? "bg-slate-800 text-white"
+                  : "bg-white text-slate-800 border border-slate-300"
+              }`}
+              onClick={() => setStatusFilter("pending")}
+            >
+              Pending
+            </button>
+            <button
+              className={`px-4 py-2 rounded-md ${
+                statusFilter === "approved"
+                  ? "bg-slate-800 text-white"
+                  : "bg-white text-slate-800 border border-slate-300"
+              }`}
+              onClick={() => setStatusFilter("approved")}
+            >
+              Approved
+            </button>
+            <button
+              className={`px-4 py-2 rounded-md ${
+                statusFilter === "rejected"
+                  ? "bg-slate-800 text-white"
+                  : "bg-white text-slate-800 border border-slate-300"
+              }`}
+              onClick={() => setStatusFilter("rejected")}
+            >
+              Rejected
+            </button>
+          </div>
+        </div>
+
+        {/* Bookings Table */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead className="bg-slate-800 text-white">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Venue
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Student Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Booking Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-slate-200">
+                {filteredBookings.length > 0 ? (
+                  filteredBookings.map((booking) => (
+                    <tr key={booking._id} className="hover:bg-slate-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="font-medium text-slate-800">
+                            {booking.venueId.name}
+                          </div>
+                          <div className="text-sm text-slate-500">
+                            {booking.venueId.abbreviation},{" "}
+                            {booking.venueId.block}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-slate-800">
+                          {booking.studentName}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-slate-800">
+                          {booking.bookingDate}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            booking.status === "approved"
+                              ? "bg-green-100 text-green-800"
+                              : booking.status === "rejected"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {booking.status.charAt(0).toUpperCase() +
+                            booking.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        {booking.status === "pending" && (
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() =>
+                                handleStatusChange(booking._id, "approved")
+                              }
+                              className="bg-blue-100 text-blue-600 hover:bg-blue-200 p-2 rounded-full"
+                              title="Approve"
+                            >
+                              <Check className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleStatusChange(booking._id, "rejected")
+                              }
+                              className="bg-red-100 text-red-600 hover:bg-red-200 p-2 rounded-full"
+                              title="Reject"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        )}
+                        {booking.status !== "pending" && (
+                          <span className="text-slate-500">-</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="px-6 py-4 text-center text-slate-500"
+                    >
+                      No bookings found matching your criteria.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Pagination - simplified for demo */}
+        <div className="flex justify-between items-center mt-4">
+          <div className="text-sm text-slate-600">
+            Showing {filteredBookings.length} of {bookings.length} bookings
+          </div>
+          <div className="flex space-x-2">
+            <button className="px-4 py-2 border border-slate-300 rounded-md bg-white text-slate-800 hover:bg-slate-50">
+              Previous
+            </button>
+            <button className="px-4 py-2 border border-slate-300 rounded-md bg-white text-slate-800 hover:bg-slate-50">
+              Next
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default BookingsManagement;
