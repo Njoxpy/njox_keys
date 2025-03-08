@@ -10,6 +10,7 @@ const {
   getTotalVenueOrdersStatus,
   totalUsersCount,
   getAdminEmployeeCount,
+  getTotalStudents,
 } = require("../controllers/stats.controller");
 
 // venues
@@ -28,6 +29,8 @@ statsRoutes.get("/total-count", getTotalVenueOrdersStatus);
 // user stats
 
 // total user count
+// total students counts
+statsRoutes.get("/total-users", getTotalStudents);
 // admin count
 // employee count
 statsRoutes.get("/total-users", totalUsersCount);

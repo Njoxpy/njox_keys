@@ -15,6 +15,7 @@ const studentSchema = new mongoose.Schema(
     yearOfStudy: {
       type: String,
       required: [true, "Enter year of study!"],
+      trim: [true, "Enter valid year of study!"],
     },
   },
   { timestamps: true }
@@ -22,3 +23,9 @@ const studentSchema = new mongoose.Schema(
 
 const Student = mongoose.model("Student", studentSchema);
 module.exports = Student;
+
+/*
+feature:
+- name: name format: first name, middlename and lastname
+- programme: enum for programme name
+ */

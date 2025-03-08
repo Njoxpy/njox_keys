@@ -64,11 +64,6 @@ const venueSchema = new mongoose.Schema(
       index: true,
       trim: true,
     },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: [true, "User ID is required"],
-    },
   },
   { timestamps: true }
 );
