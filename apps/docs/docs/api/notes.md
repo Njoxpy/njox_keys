@@ -100,13 +100,31 @@ here is the sample data for the orders
 
 - A table listing all users (name, email, role: admin/employee).  
 - Role-based UI (admins can modify roles, employees cannot).  
-- Add User button (opens a modal form).  
+- Add User button (opens a modal form), for user modal it should involve the folowing entities firstname, lastname, email, registrationNumber, password, role include this endpoint to add user http://localhost:3000/api/v1/users.  
 - Edit/Delete user options.  
 - Use Tailwind for styling:  
   - `bg-white text-slate-800` for tables  
   - `bg-blue-100 text-blue-600` for buttons  
   - `bg-slate-800 text-white` for modals.  
-Ensure full responsiveness."*
+Ensure full responsiveness."*, include modal popup for editing user info and modal popup for deleting user info to get users at this point http://localhost:3000/api/v1/users
+
+```js
+{
+    "_id": "67ca95d93aef3d4ed5bc6243",
+    "firstname": "Godbless",
+    "lastname": "Nyagawa",
+    "email": "godbless@gmail.com",
+    "registrationNumber": 2210052314,
+    "password": "$2b$12$ONUcl4P6EJbtkctxfX3aIOp5rHnaqpfUH0tI.J0y6Fmqv0w0eiK7S",
+    "role": "admin",
+    "createdAt": "2025-03-07T06:44:41.302Z",
+    "updatedAt": "2025-03-07T06:44:41.302Z",
+    "__v": 0
+  }
+```
+
+edit: <http://localhost:3000/api/v1/users/:id>
+delete <http://localhost:3000/api/v1/users>
 
 ---
 
@@ -148,6 +166,17 @@ const Student = mongoose.model("Students", studentSchema);
 module.exports = Student;
 
 ```
+
+student data are from this endpoint: localhost:3000/api/v1/students are into this form  {
+      "_id": "67ca98bf955c7e1b297fdfbf",
+      "registrationNumber": 1234567890123555600,
+      "yearOfStudy": "2023/2024",
+      "createdAt": "2025-03-07T06:57:03.621Z",
+      "updatedAt": "2025-03-07T13:05:00.334Z",
+      "__v": 0
+    }
+
+    include pagination search and also a modal popu to edit and delete also modal popu for adding new user
 
 "*
 
