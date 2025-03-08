@@ -44,7 +44,7 @@ const signupStudent = async (req, res) => {
     await Student.create(newStudent);
     res
       .status(CREATED)
-      .json({ message: "Student created successfully", newStudent });
+      .json({ message: "Student added successfully", newStudent });
   } catch (error) {
     res.status(SERVER_ERROR).json({ message: error.message });
   }
@@ -52,13 +52,13 @@ const signupStudent = async (req, res) => {
 
 const getStudents = async (req, res) => {
   try {
-    const students = await Student.find();
+    const students = await Student.find().sort({ createdAt: -1 });
 
     if (students.length === 0) {
       return res.status(OK).json({ message: "No students found" });
     }
 
-    res.status(OK).json({ students });
+    res.status(OK).json(students);
   } catch (error) {
     res.status(SERVER_ERROR).json({ message: error.message });
   }

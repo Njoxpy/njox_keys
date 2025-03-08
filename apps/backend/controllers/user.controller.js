@@ -1,5 +1,9 @@
 // modules
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
+// create token utils
+const createToken = require("../utils/createToken");
 
 // status code
 const {
@@ -14,37 +18,39 @@ const {
 const User = require("../models/user.model");
 
 const Signup = async (req, res) => {
+  const { firstname, lastname, email, registrationNumber, password, role } =
+    req.body;
   try {
-    const { firstname, lastname, email, registrationNumber, password, role } =
-      req.body;
-
-    const hashedPassword = await bcrypt.hash(password, 12);
-    // check if email exist
-    const exists = await User.findOne({
-      $or: [{ email }, { registrationNumber }],
-    });
-
-    if (exists) {
-      return res.status(BAD_REQUEST).json({
-        message:
-          "User already exist!, use different email or regstration number",
-      });
-    }
-
-    const newUser = await User.create({
+    const user = await User.signup(
       firstname,
       lastname,
       email,
       registrationNumber,
-      password: hashedPassword,
-      role,
-    });
+      password,
+      role
+    );
 
-    res.status(CREATED).json({ message: "User created sucessfully", newUser });
+    const token = createToken(user._id);
+    res.status(CREATED).json({ email, token });
   } catch (error) {
-    res
-      .status(SERVER_ERROR)
-      .json({ message: "Failed to create user", error: error.message });
+    res.status(SERVER_ERROR).json({ message: error.message });
+  }
+};
+
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.login(email, password);
+
+    const token = createToken(user._id);
+
+    if (!token) {
+      return res.status(NOT_FOUND).json({ message: "Token not found" });
+    }
+    res.status(OK).json({ email, token });
+  } catch (error) {
+    res.status(SERVER_ERROR).json({ message: error.message });
   }
 };
 
@@ -71,9 +77,7 @@ const getUsers = async (req, res) => {
     const users = await User.find().sort({ createdAt: -1 });
 
     if (users.length === 0) {
-      return res
-        .status(NOT_FOUND)
-        .json({ message: "There are no users for now!" });
+      return res.status(OK).json({ message: "There are no users for now!" });
     }
 
     res.status(OK).json(users);
@@ -166,8 +170,10 @@ const deleteUser = async (req, res) => {
       .json({ message: "Failed to delete user", error: error.message });
   }
 };
+
 module.exports = {
   Signup,
+  login,
   getUser,
   getUsers,
   updateUser,

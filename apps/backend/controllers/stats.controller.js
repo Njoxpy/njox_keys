@@ -9,15 +9,15 @@ const {
 const Venue = require("../models/venue.model");
 const Order = require("../models/order.model");
 const User = require("../models/user.model");
+const Student = require("../models/student.model");
 
+// venues
 const getVenuesListCount = async (req, res) => {
   try {
     const venueCount = await Venue.countDocuments();
 
     if (venueCount === 0) {
-      return res
-        .status(NOT_FOUND)
-        .json({ message: "There is no venue for now!" });
+      return res.status(OK).json({ message: "There is no venue for now!" });
     }
 
     res.status(OK).json({ venueCount });
@@ -36,7 +36,7 @@ const getAvailableVenuesCount = async (req, res) => {
 
     if (venueCountAvailable === 0) {
       return res
-        .status(NOT_FOUND)
+        .status(OK)
         .json({ message: "There is no venue available for booking for now!" });
     }
 
@@ -55,7 +55,7 @@ const getBookedVenuesCount = async (req, res) => {
 
     if (venueCountBooked === 0) {
       return res
-        .status(NOT_FOUND)
+        .status(OK)
         .json({ message: "No venue booked!, count is zero" });
     }
 
@@ -81,7 +81,7 @@ const getTotalVenueOrders = async (req, res) => {
 
     if (ordersCount === 0) {
       return res
-        .status(NOT_FOUND)
+        .status(OK)
         .json({ message: "There are current 0 orders for now!" });
     }
 
@@ -105,7 +105,7 @@ const getTotalVenueOrdersStatus = async (req, res) => {
     const orderCount = await Order.countDocuments({ status });
 
     if (orderCount === 0) {
-      return res.status(NOT_FOUND).json({ message: "No orders found!" });
+      return res.status(OK).json({ message: "No orders found!" });
     }
 
     res.status(OK).json({ count: orderCount });
@@ -122,7 +122,7 @@ const totalUsersCount = async (req, res) => {
     const usersCount = await User.countDocuments();
 
     if (usersCount === 0) {
-      return res.status(NOT_FOUND).json({ message: "No users" });
+      return res.status(OK).json({ message: "No users" });
     }
 
     res.status(OK).json({ usersCount });
@@ -150,7 +150,7 @@ const getAdminEmployeeCount = async (req, res) => {
 
     // Check if no users with the given role
     if (count === 0) {
-      return res.status(NOT_FOUND).json({ message: `No ${role}s for now!` });
+      return res.status(OK).json({ message: `No ${role}s for now!` });
     }
 
     // Return the count of users with the specified role
@@ -163,6 +163,22 @@ const getAdminEmployeeCount = async (req, res) => {
   }
 };
 
+// students
+const getTotalStudents = async (req, res) => {
+  try {
+    const studentsCount = await Student.countDocuments().sort({ createAt: -1 });
+
+    if (studentsCount === 0) {
+      return res
+        .status(OK)
+        .json({ message: "There are current no students for now!" });
+    }
+
+    res.status(OK).json({ studentsCount });
+  } catch (error) {
+    res.status(SERVER_ERROR).json({ message: error.message });
+  }
+};
 module.exports = {
   getVenuesListCount,
   getAvailableVenuesCount,
@@ -171,6 +187,7 @@ module.exports = {
   getTotalVenueOrdersStatus,
   totalUsersCount,
   getAdminEmployeeCount,
+  getTotalStudents,
 };
 
 // http://localhost:3000/api/v1/stats/total-booked
@@ -178,3 +195,4 @@ module.exports = {
 // http://localhost:3000/api/v1/stats/total-venues
 // http://localhost:3000/api/v1/stats/total-count?status=approved
 // http://localhost:3000/api/v1/stats//total-role?role=employee
+// http://localhost:3000/api/v1/stats/total-users
