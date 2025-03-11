@@ -11,18 +11,16 @@ const mongoose = require("mongoose");
 // Models
 const Order = require("../models/order.model");
 const Venue = require("../models/venue.model");
+const Student = require("../models/student.model");
 
 const createOrder = async (req, res) => {
-  const { venueId, studentId } = req.body;
+  const { venueId, registrationNumber } = req.body;
 
   try {
     const venue = await Venue.findById(venueId);
-
     if (!venue) {
       return res.status(NOT_FOUND).json({ message: "Venue not found" });
     }
-
-    let employeeId = req.user && req.user._id;
 
     if (venue.status === "booked") {
       return res
@@ -30,17 +28,27 @@ const createOrder = async (req, res) => {
         .json({ message: "Venue is already booked" });
     }
 
-    // Create the order and set its status to 'approved'
+    const student = await Student.findOne({ registrationNumber });
+    if (!student) {
+      return res.status(NOT_FOUND).json({
+        message: "Student not found with the given registration number",
+      });
+    }
+
+    let employeeId = req.user && req.user._id;
+
     const newOrder = await Order.create({
       venueId,
-      student: studentId, // Dynamically set the studentId
+      student: student._id,
       employee: employeeId,
       status: "approved",
     });
 
+    // Change the venue status to "booked"
     venue.status = "booked";
     await venue.save();
 
+    // Respond with success
     res.status(CREATED).json({
       message: "Order created successfully",
       newOrder,
@@ -55,9 +63,9 @@ const createOrder = async (req, res) => {
 const getOrders = async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate("venueId", "abbreviation block capacity name") // Populating venue details
-      .populate("student", "registrationNumber yearOfStudy") // Ensure student details are included
-      .populate("employee", "firstname lastname email role") // Ensure employee details are included
+      .populate("venueId", "abbreviation block capacity name")
+      .populate("student", "registrationNumber yearOfStudy")
+      .populate("employee", "firstname lastname email role")
       .sort({ createdAt: -1 });
 
     if (orders.length === 0) {
@@ -157,7 +165,7 @@ const deleteOrder = async (req, res) => {
     const exists = await Order.findById(id);
 
     if (!exists) {
-      return res.status(NOT_FOUND).json({ message: "Order nto found" });
+      return res.status(NOT_FOUND).json({ message: "Order not found" });
     }
 
     const deletedOrder = await Order.findByIdAndDelete(id);

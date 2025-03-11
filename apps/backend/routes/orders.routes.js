@@ -27,18 +27,29 @@ orderRoutes.post("/", authenticate, validateOrderCreate, createOrder);
 orderRoutes.get("/", authenticate, getOrders);
 
 // GET: Get a specific order by ID
-orderRoutes.get("/:id", validateObjectId, getOrder);
+orderRoutes.get("/:id", authenticate, validateObjectId, getOrder);
 
 // GET: Get orders by status (rejected, pending, approved)
-orderRoutes.get("/status", getOrderStatus); // Adjusted this route for status filtering
+orderRoutes.get("/status", authenticate, getOrderStatus);
 
 // PUT: Update the status of an order (approved, rejected, etc.)
-orderRoutes.put("/status/:id", validateObjectId, updateOrderStatus);
-
-// DELETE: Delete an order
-orderRoutes.delete("/:id", validateObjectId, deleteOrder);
+orderRoutes.put(
+  "/status/:id",
+  authenticate,
+  validateObjectId,
+  updateOrderStatus
+);
 
 // PUT: Return keys (update status and venue availability)
-orderRoutes.put("/return/:id/", validateObjectId, returnKeys);
+orderRoutes.put("/return/:id/", authenticate, validateObjectId, returnKeys);
+
+// DELETE: Delete an order
+orderRoutes.delete(
+  "/:id",
+  authenticate,
+  authorize(["admin"]),
+  validateObjectId,
+  deleteOrder
+);
 
 module.exports = orderRoutes;
