@@ -58,6 +58,8 @@ nav:
   - Frontend:
       - Styles:
           - Colors: styles\colors.md
+  - Future:
+    - MVPFuture: future/future.md
 
 markdown_extensions:
   - admonition

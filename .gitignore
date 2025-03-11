@@ -68,3 +68,11 @@ Thumbs.db
 
 # mkdocs-material theme overrides (if using)
 overrides/__pycache__/
+
+auth.md
+un.md
+challenge.md
+projects.md
+body.md
+
+uploads/
