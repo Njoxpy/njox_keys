@@ -41,14 +41,25 @@ const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.login(email, password);
-
-    const token = createToken(user._id);
+    // Login the user and get both user object and the token
+    const { user, token } = await User.login(email, password);
 
     if (!token) {
       return res.status(NOT_FOUND).json({ message: "Token not found" });
     }
-    res.status(OK).json({ email, token });
+
+    // Send the user data and token in the response
+    res.status(OK).json({
+      message: "Login successful",
+      user: {
+        id: user._id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+        role: user.role,
+      },
+      token,
+    });
   } catch (error) {
     res.status(SERVER_ERROR).json({ message: error.message });
   }
@@ -66,9 +77,7 @@ const getUser = async (req, res) => {
 
     res.status(OK).json(user);
   } catch (error) {
-    res
-      .status(SERVER_ERROR)
-      .json({ message: "Failed to get user", error: error.message });
+    res.status(SERVER_ERROR).json({ message: error.message });
   }
 };
 
@@ -82,9 +91,7 @@ const getUsers = async (req, res) => {
 
     res.status(OK).json(users);
   } catch (error) {
-    res
-      .status(SERVER_ERROR)
-      .json({ message: "Failed to get users!", error: error.message });
+    res.status(SERVER_ERROR).json({ message: error.message });
   }
 };
 
@@ -94,63 +101,46 @@ const updateUser = async (req, res) => {
     const { firstname, lastname, email, registrationNumber, password, role } =
       req.body;
 
-    // Check if any critical fields are empty
-    if (firstname && firstname.trim() === "") {
-      return res.status(400).json({ message: "First name cannot be empty!" });
+    let user = await User.findById(id);
+    if (!user) {
+      return res.status(NOT_FOUND).json({ message: "User not found" });
     }
 
-    if (lastname && lastname.trim() === "") {
-      return res.status(400).json({ message: "Last name cannot be empty!" });
-    }
+    // Check uniqueness for email and registration number (excluding current user)
+    const regnoexists = await User.findOne({
+      registrationNumber,
+      _id: { $ne: id },
+    });
+    const emailExists = await User.findOne({ email, _id: { $ne: id } });
 
-    if (email && email.trim() === "") {
-      return res.status(400).json({ message: "Email cannot be empty!" });
-    }
-
-    if (registrationNumber && registrationNumber.trim() === "") {
+    if (regnoexists) {
       return res
-        .status(400)
-        .json({ message: "Registration number cannot be empty!" });
+        .status(BAD_REQUEST)
+        .json({ message: "User with this registration number exists" });
     }
 
-    // Check if the updated email or registration number already exists (excluding the current user)
-    if (email) {
-      const emailExists = await User.findOne({ email, _id: { $ne: id } });
-      if (emailExists) {
-        return res.status(400).json({ message: "Email already exists!" });
-      }
+    if (emailExists) {
+      return res
+        .status(BAD_REQUEST)
+        .json({ message: "User with this email exists" });
     }
 
-    if (registrationNumber) {
-      const regNumberExists = await User.findOne({
-        registrationNumber,
-        _id: { $ne: id },
-      });
-      if (regNumberExists) {
-        return res
-          .status(400)
-          .json({ message: "Registration number already exists!" });
-      }
+    if (firstname) user.firstname = firstname;
+    if (lastname) user.lastname = lastname;
+    if (email) user.email = email;
+    if (registrationNumber) user.registrationNumber = registrationNumber;
+    if (role) user.role = role;
+
+    if (password) {
+      const salt = await bcrypt.genSalt(parseInt(process.env.SALT_ROUNDS));
+      user.password = await bcrypt.hash(password, salt);
     }
 
-    // Update the user with the provided details
-    const updatedUser = await User.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
+    await user.save();
 
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.status(200).json({
-      message: "User updated successfully!",
-      updatedUser,
-    });
+    res.status(OK).json({ message: "User updated successfully", user });
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to update user",
-      error: error.message,
-    });
+    res.status(SERVER_ERROR).json({ message: error.message });
   }
 };
 
@@ -163,11 +153,9 @@ const deleteUser = async (req, res) => {
       return res.status(NOT_FOUND).json({ message: "User not found!" });
     }
 
-    res.status(OK).json({ message: "Deleted sucessfully", deletedUser });
+    res.status(OK).json({ message: "Deleted sucessfully" });
   } catch (error) {
-    res
-      .status(SERVER_ERROR)
-      .json({ message: "Failed to delete user", error: error.message });
+    res.status(SERVER_ERROR).json({ message: error.message });
   }
 };
 

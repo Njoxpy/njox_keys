@@ -25,8 +25,9 @@ const venueRoutes = require("./routes/venue.routes");
 const statsRoutes = require("./routes/stats.routes");
 const statusRouter = require("./routes/status.routes");
 const orderRoutes = require("./routes/orders.routes");
-const userRoutes = require("./routes/userRoutes");
+const userRoutes = require("./routes/user.routes");
 const studentRoutes = require("./routes/students.routes");
+const reportRoutes = require("./routes/reports.routes");
 
 // register routes
 app.use("/api/v1/venues", venueRoutes);
@@ -37,6 +38,7 @@ app.use("/api/v1/status", statusRouter);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/students", studentRoutes);
+app.use("/api/v1/reports", reportRoutes);
 
 var accessLogStream = rfs.createStream("accessMorgan.log", {
   interval: "1d",

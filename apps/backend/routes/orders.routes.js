@@ -15,12 +15,16 @@ const {
 // validate order middleware
 const validateOrderCreate = require("../middleware/validation/validateOrderCreate");
 const validateObjectId = require("../middleware/validation/validateObjectId");
+const {
+  authenticate,
+  authorize,
+} = require("../middleware/authentication/authenticate");
 
 // POST: Create order
-orderRoutes.post("/", validateOrderCreate, createOrder);
+orderRoutes.post("/", authenticate, validateOrderCreate, createOrder);
 
 // GET: Get all orders
-orderRoutes.get("/", getOrders);
+orderRoutes.get("/", authenticate, getOrders);
 
 // GET: Get a specific order by ID
 orderRoutes.get("/:id", validateObjectId, getOrder);
@@ -29,7 +33,7 @@ orderRoutes.get("/:id", validateObjectId, getOrder);
 orderRoutes.get("/status", getOrderStatus); // Adjusted this route for status filtering
 
 // PUT: Update the status of an order (approved, rejected, etc.)
-orderRoutes.put("/status/:id/", validateObjectId, updateOrderStatus);
+orderRoutes.put("/status/:id", validateObjectId, updateOrderStatus);
 
 // DELETE: Delete an order
 orderRoutes.delete("/:id", validateObjectId, deleteOrder);

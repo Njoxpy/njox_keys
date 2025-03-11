@@ -12,57 +12,42 @@ const mongoose = require("mongoose");
 const Order = require("../models/order.model");
 const Venue = require("../models/venue.model");
 
-// redis
-const redis = require("../config/redisClient");
-
 const createOrder = async (req, res) => {
-  const { venueId, studentId, employeeId } = req.body;
+  const { venueId, studentId } = req.body;
 
   try {
-    if (!venueId) {
-      return res.status(400).json({ message: "Venue ID is required" });
-    }
-    if (!studentId || !employeeId) {
-      return res
-        .status(400)
-        .json({ message: "Both Student ID and Employee ID are required" });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(employeeId)) {
-      return res.status(404).json({ message: "Invalid Employee ID." });
-    }
-    if (!mongoose.Types.ObjectId.isValid(studentId)) {
-      return res.status(404).json({ message: "Invalid Student ID." });
-    }
-
     const venue = await Venue.findById(venueId);
+
     if (!venue) {
-      return res.status(404).json({ message: "Venue not found" });
+      return res.status(NOT_FOUND).json({ message: "Venue not found" });
     }
+
+    let employeeId = req.user && req.user._id;
 
     if (venue.status === "booked") {
-      return res.status(400).json({ message: "Venue is already booked" });
+      return res
+        .status(BAD_REQUEST)
+        .json({ message: "Venue is already booked" });
     }
 
-    // Create the order and set its status to 'pending'
+    // Create the order and set its status to 'approved'
     const newOrder = await Order.create({
       venueId,
-      student: studentId,
+      student: studentId, // Dynamically set the studentId
       employee: employeeId,
-      status: "pending",
+      status: "approved",
     });
 
     venue.status = "booked";
     await venue.save();
 
-    res.status(201).json({
+    res.status(CREATED).json({
       message: "Order created successfully",
       newOrder,
     });
   } catch (error) {
-    res.status(500).json({
-      message: "An error occurred while creating the order.",
-      error: error.message,
+    res.status(SERVER_ERROR).json({
+      message: error.message,
     });
   }
 };
@@ -70,18 +55,18 @@ const createOrder = async (req, res) => {
 const getOrders = async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate("venueId", "name status")
-      .populate("student", "registrationNumber yearOfStudy")
-      .populate("employee", "firstname lastname email")
+      .populate("venueId", "abbreviation block capacity name") // Populating venue details
+      .populate("student", "registrationNumber yearOfStudy") // Ensure student details are included
+      .populate("employee", "firstname lastname email role") // Ensure employee details are included
       .sort({ createdAt: -1 });
 
     if (orders.length === 0) {
-      return res.status(404).json({ message: "No orders for now" });
+      return res.status(OK).json({ message: "No orders for now" });
     }
 
-    res.status(200).json(orders);
+    res.status(OK).json(orders);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(SERVER_ERROR).json({ error: error.message });
   }
 };
 
@@ -91,7 +76,10 @@ const getOrder = async (req, res) => {
 
   try {
     // validate order id
-    const order = await Order.findById(id).populate("venueId");
+    const order = await Order.findById(id)
+      .populate("venueId")
+      .populate("student", "registrationNumber yearOfStudy")
+      .populate("employee", "firstname lastname email");
 
     if (!order) {
       return res.status(NOT_FOUND).json({ message: "Order not found" });
@@ -108,10 +96,9 @@ const getOrderStatus = async (req, res) => {
 
   try {
     // check status
-    if (!status || !["completed", "pending", "approved"].includes(status)) {
+    if (!status || !["pending", "approved"].includes(status)) {
       return res.status(BAD_REQUEST).json({
-        message:
-          "Invalid order status. Allowed values: 'completed', 'pending', 'approved'",
+        message: "Invalid order status. Allowed values:  'pending', 'approved'",
       });
     }
 
@@ -139,8 +126,9 @@ const updateOrderStatus = async (req, res) => {
       return res.status(NOT_FOUND).json({ message: "Order not found" });
     }
 
-    // check if status is valid
-    if (!["pending", "approved", "rejected"].includes(status)) {
+    // Check if status is valid
+    const validStatuses = ["pending", "approved"];
+    if (!validStatuses.includes(status?.trim().toLowerCase())) {
       return res
         .status(BAD_REQUEST)
         .json({ message: "Order status is not correct!" });
@@ -148,15 +136,15 @@ const updateOrderStatus = async (req, res) => {
 
     const updatedOrder = await Order.findByIdAndUpdate(
       id,
-      { new: true },
-      { status }
+      { status },
+      { new: true } // Corrected the argument order
     );
 
     if (!updatedOrder) {
       return res.status(NOT_FOUND).json({ message: "Order not found!" });
     }
 
-    res.status(OK).json({ message: "Updated sucessfullly", updatedOrder });
+    res.status(OK).json({ message: "Updated successfully", updatedOrder });
   } catch (error) {
     res.status(SERVER_ERROR).json({ error: error.message });
   }

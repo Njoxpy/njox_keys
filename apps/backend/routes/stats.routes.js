@@ -30,7 +30,7 @@ statsRoutes.get("/total-count", getTotalVenueOrdersStatus);
 
 // total user count
 // total students counts
-statsRoutes.get("/total-users", getTotalStudents);
+statsRoutes.get("/total-students", getTotalStudents);
 // admin count
 // employee count
 statsRoutes.get("/total-users", totalUsersCount);

@@ -1,31 +1,48 @@
-// Library
 const mongoose = require("mongoose");
-
-// Models
 const Venue = require("../../models/venue.model");
 const Order = require("../../models/order.model");
-
-// Status Codes
+const Student = require("../../models/student.model");
 const { NOT_FOUND, BAD_REQUEST } = require("../../constants/apiResponse");
 
 const validateOrderCreate = async (req, res, next) => {
-  const { venueId, status } = req.body;
+  const { venueId, studentId, registrationNumber } = req.body;
 
   // Validate required fields
   if (!venueId) {
-    return res
-      .status(BAD_REQUEST)
-      .json({ message: "Fill all fields! Venue ID is required." });
+    return res.status(BAD_REQUEST).json({ message: "Venue ID is required." });
   }
 
-  // Validate if venueId is a valid ObjectId
+  const employee = req.user && req.user._id;
+  if (!employee) {
+    return res.status(BAD_REQUEST).json({ message: "Employee ID is required" });
+  }
+
+  // Validate if venueId and employeeId are valid ObjectIds
   if (!mongoose.Types.ObjectId.isValid(venueId)) {
     return res.status(NOT_FOUND).json({ message: "Invalid Venue ID." });
   }
 
-  if (!["pending", "approved", "rejected"]) {
-    return res.status(BAD_REQUEST).json({ message: "Order status not valid" });
+  if (!mongoose.Types.ObjectId.isValid(employee)) {
+    return res.status(NOT_FOUND).json({ message: "Invalid Employee ID." });
   }
+
+  // Validate registrationNumber as a number
+  if (!registrationNumber || isNaN(registrationNumber)) {
+    return res
+      .status(BAD_REQUEST)
+      .json({ message: "Valid registration number is required." });
+  }
+
+  // Find the student using registrationNumber
+  const student = await Student.findOne({ registrationNumber });
+  if (!student) {
+    return res.status(NOT_FOUND).json({ message: "Student not found." });
+  }
+
+  const studentId = student._id;
+
+  // Attach the studentId to the request object to pass it to the next middleware or handler
+  req.body.studentId = studentId;
 
   // Check if venue exists
   const venue = await Venue.findById(venueId);
@@ -37,10 +54,10 @@ const validateOrderCreate = async (req, res, next) => {
   if (venue.status !== "available") {
     return res
       .status(BAD_REQUEST)
-      .json({ message: "Venue is alreday booked." });
+      .json({ message: "Venue is already booked." });
   }
 
-  // Check for existing order
+  // Check for existing order for the venue
   const existingOrder = await Order.findOne({ venueId });
   if (existingOrder) {
     return res
@@ -48,7 +65,7 @@ const validateOrderCreate = async (req, res, next) => {
       .json({ message: "Venue is already booked." });
   }
 
-  // Forward request
+  // Forward the request to the next middleware or route handler
   next();
 };
 

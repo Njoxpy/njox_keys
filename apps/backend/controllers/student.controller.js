@@ -9,32 +9,10 @@ const {
 // model
 const Student = require("../models/student.model");
 
+// add student
 const signupStudent = async (req, res) => {
   try {
     const { registrationNumber, yearOfStudy } = req.body;
-
-    //   v;alidate request
-    if (!registrationNumber) {
-      return res
-        .status(400)
-        .json({ message: "Registration number is required" });
-    }
-
-    if (!yearOfStudy) {
-      return res.status(400).json({ message: "Year of study is required" });
-    }
-
-    if (!/^\d{14}$/.test(registrationNumber.toString())) {
-      return res
-        .status(400)
-        .json({ message: "Registration number must be exactly 14 digits" });
-    }
-
-    if (typeof registrationNumber !== "number" || isNaN(registrationNumber)) {
-      return res
-        .status(BAD_REQUEST)
-        .json({ message: "Registration number must be a number" });
-    }
 
     const newStudent = new Student({
       registrationNumber,
@@ -42,9 +20,7 @@ const signupStudent = async (req, res) => {
     });
 
     await Student.create(newStudent);
-    res
-      .status(CREATED)
-      .json({ message: "Student added successfully", newStudent });
+    res.status(CREATED).json({ message: "Student added successfully" });
   } catch (error) {
     res.status(SERVER_ERROR).json({ message: error.message });
   }
@@ -70,10 +46,10 @@ const getStudent = async (req, res) => {
     const student = await Student.findById(id);
 
     if (!student) {
-      return res.status(OK).json({ message: "Student not found" });
+      return res.status(NOT_FOUND).json({ message: "Student not found" });
     }
 
-    res.status(OK).json({ student });
+    res.status(OK).json(student);
   } catch (error) {
     res.status(SERVER_ERROR).json({ message: error.message });
   }
@@ -81,27 +57,7 @@ const getStudent = async (req, res) => {
 
 const updateStudent = async (req, res) => {
   try {
-    const { registrationNumber, yearOfStudy } = req.body;
     const { id } = req.params;
-
-    /* 
-    if (!registrationNumber && !yearOfStudy) {
-      return res.status(BAD_REQUEST).json({
-        message: "Registration number or year of study is required",
-      });
-    }
-    if (typeof registrationNumber !== "number" || isNaN(registrationNumber)) {
-      return res
-        .status(BAD_REQUEST)
-        .json({ message: "Registration number must be a number" });
-    }
-
-    if (yearOfStudy === "") {
-      return res
-        .status(BAD_REQUEST)
-        .json({ message: "Year of study cannot be empty!" });
-    }
-      */
 
     // validate id
     const updatedStudent = await Student.findByIdAndUpdate(
@@ -133,11 +89,12 @@ const deleteStudent = async (req, res) => {
       return res.status(NOT_FOUND).json({ message: "User not found!" });
     }
 
-    res.status(OK).json({ message: "Deleted sucessfully", deletedStudent });
+    res.status(OK).json({ message: "Student Deleted sucessfully" });
   } catch (error) {
     res.status(SERVER_ERROR).json({ message: error.message });
   }
 };
+
 module.exports = {
   signupStudent,
   getStudents,

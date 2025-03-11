@@ -13,7 +13,6 @@ const validateVenueCreate = async (req, res, next) => {
     venueNumber,
   } = req.body;
 
-  // get user is from userId
   if (
     !abbreviation ||
     !block ||
@@ -29,7 +28,7 @@ const validateVenueCreate = async (req, res, next) => {
     });
   }
 
-  // const userId = req.user && req.user._id;
+  const userId = req.user && req.user._id;
 
   const parsedCapacity = Number(capacity);
   if (isNaN(parsedCapacity)) {
@@ -50,9 +49,9 @@ const validateVenueCreate = async (req, res, next) => {
     });
   }
 
-  /* if (!mongoose.Types.ObjectId.isValid(userId)) {
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
     return res.status(BAD_REQUEST).json({ message: "Invalid user ID" });
-  } */
+  }
 
   if (description.length > 500) {
     return res.status(BAD_REQUEST).json({

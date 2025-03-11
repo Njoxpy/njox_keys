@@ -22,7 +22,7 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "approved", "rejected"],
+      enum: ["pending", "approved"],
       default: "pending",
       index: true,
     },
@@ -35,10 +35,5 @@ const orderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// venueId, userId, status(pending, completed), bookingDate
 const OrderModel = mongoose.model("Order", orderSchema);
 module.exports = OrderModel;
-
-// include createdBy
-// userId should have who created order and who issued
-// requestedAt, approvedAt, rejectedAt

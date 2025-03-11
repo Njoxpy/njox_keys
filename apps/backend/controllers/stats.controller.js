@@ -51,7 +51,7 @@ const getAvailableVenuesCount = async (req, res) => {
 
 const getBookedVenuesCount = async (req, res) => {
   try {
-    const venueCountBooked = await Venue.countDocuments();
+    const venueCountBooked = await Venue.countDocuments({ status: "booked" });
 
     if (venueCountBooked === 0) {
       return res

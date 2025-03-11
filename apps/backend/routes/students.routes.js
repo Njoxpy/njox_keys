@@ -1,6 +1,7 @@
 const express = require("express");
+const students = express.Router();
 
-// routes
+// controllers
 const {
   signupStudent,
   getStudents,
@@ -8,22 +9,40 @@ const {
   updateStudent,
   deleteStudent,
 } = require("../controllers/student.controller");
-const userRoutes = express.Router();
 
+// middleware
 const validateObjectId = require("../middleware/validation/validateObjectId");
+const validateStudentCreate = require("../middleware/validation/validateStudentCreate");
+const {
+  authenticate,
+  authorize,
+} = require("../middleware/authentication/authenticate");
 
 // create
-userRoutes.post("/", signupStudent);
+students.post("/", authenticate, validateStudentCreate, signupStudent);
 
 // read: students
-userRoutes.get("/", getStudents);
+students.get("/", authenticate, getStudents);
 
 // read: student
-userRoutes.get("/:id", validateObjectId, getStudent);
+students.get("/:id", authenticate, validateObjectId, getStudent);
 
 // update
-userRoutes.patch("/:id", validateObjectId, updateStudent);
+students.patch(
+  "/:id",
+  authenticate,
+  authorize(["admin"]),
+  validateObjectId,
+  updateStudent
+);
 
 // delete
-userRoutes.delete("/:id", validateObjectId, deleteStudent);
-module.exports = userRoutes;
+students.delete(
+  "/:id",
+  authenticate,
+  authorize(["admin"]),
+  validateObjectId,
+  deleteStudent
+);
+
+module.exports = students;

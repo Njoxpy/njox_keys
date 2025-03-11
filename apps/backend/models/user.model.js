@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const validator = require("validator");
 
 const userSchema = new mongoose.Schema(
   {
@@ -22,7 +24,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       required: [true, "Enter email"],
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, "Invalid email format"], // Email format validation
+      match: [/^\S+@\S+\.\S+$/, "Invalid email format"],
     },
     registrationNumber: {
       type: Number,
@@ -30,7 +32,7 @@ const userSchema = new mongoose.Schema(
       required: [true, "Enter registration number"],
       validate: {
         validator: function (num) {
-          return /^\d{10}$/.test(num.toString()); // Ensures registration number is exactly 10 digits
+          return /^\d{10}$/.test(num.toString());
         },
         message: "Registration number must be exactly 10 digits",
       },
@@ -38,13 +40,10 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Enter password"],
-      // minLength: [6, "Password should be at least 8 characters"],
-      // maxLength: [32, "Password should not exceed 32 characters"],
     },
     role: {
       type: String,
       enum: ["admin", "employee"],
-      default: "employee", // Default role if none is provided
     },
   },
   { timestamps: true }
@@ -57,7 +56,7 @@ userSchema.statics.signup = async function (
   email,
   registrationNumber,
   password,
-  role = "employee"
+  role
 ) {
   // check if the email and reg no exists
 
@@ -81,8 +80,19 @@ userSchema.statics.signup = async function (
     throw new Error("Enter valid regstration number");
   }
 
-  if (!password) {
-    throw new Error("Enter password");
+  if (
+    !password ||
+    !validator.isStrongPassword(password, {
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+      minSymbols: 1,
+    })
+  ) {
+    throw new Error(
+      "Password must be at least 8 characters long, with at least one lowercase letter, one uppercase letter, one number, and one special character."
+    );
   }
 
   if (!role || !["admin", "employee"].includes(role)) {
@@ -97,11 +107,9 @@ userSchema.statics.signup = async function (
     throw new Error("Regstration number exists");
   }
 
-  const salt = await bcrypt.genSalt(12);
+  const salt = await bcrypt.genSalt(parseInt(process.env.SALT_ROUNDS));
 
   const hashedPassword = await bcrypt.hash(password, salt);
-
-  // const hashedpas = await bcrypt.hash(password, 12)
 
   const user = await this.create({
     firstname,
@@ -109,31 +117,38 @@ userSchema.statics.signup = async function (
     email,
     registrationNumber,
     password: hashedPassword,
+    role,
   });
 
   return user;
 };
 
 // login
+
 userSchema.statics.login = async function (email, password) {
   if (!email || !password) {
     throw new Error("All fields must be filled!");
   }
 
-  // check if the email exists
+  // Check if the email exists
   const user = await this.findOne({ email });
 
   if (!user) {
     throw new Error("Incorrect email");
   }
 
+  // Check if the password matches
   const match = await bcrypt.compare(password, user.password);
 
   if (!match) {
     throw new Error("Incorrect password");
   }
 
-  return user;
+  const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+    expiresIn: "3d",
+  });
+
+  return { user, token };
 };
 
 const User = mongoose.model("User", userSchema);
