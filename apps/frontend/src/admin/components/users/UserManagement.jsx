@@ -18,6 +18,18 @@ const UsersManagement = () => {
     role: "employee",
   });
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Filtering state
+  const [filterRole, setFilterRole] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Sorting state
+  const [sortField, setSortField] = useState("firstname");
+  const [sortOrder, setSortOrder] = useState("asc");
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -136,6 +148,41 @@ const UsersManagement = () => {
     setShowDeleteModal(true);
   };
 
+  // Filtering logic
+  const filteredUsers = users.filter((user) => {
+    const matchesRole = filterRole === "all" || user.role === filterRole;
+    const matchesSearch =
+      user.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.lastname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesRole && matchesSearch;
+  });
+
+  // Sorting logic
+  const sortedUsers = filteredUsers.sort((a, b) => {
+    if (sortOrder === "asc") {
+      return a[sortField] > b[sortField] ? 1 : -1;
+    } else {
+      return a[sortField] < b[sortField] ? 1 : -1;
+    }
+  });
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentUsers = sortedUsers.slice(indexOfFirstItem, indexOfLastItem);
+
+  const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1); // Reset to first page
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -157,6 +204,56 @@ const UsersManagement = () => {
         </div>
       )}
 
+      {/* Filter and Search Controls */}
+      <div className="mb-6 flex flex-wrap gap-4">
+        <div>
+          <label className="block text-sm mb-1">Filter by Role:</label>
+          <select
+            value={filterRole}
+            onChange={(e) => setFilterRole(e.target.value)}
+            className="p-2 border rounded-md text-slate-800"
+          >
+            <option value="all">All</option>
+            <option value="admin">Admin</option>
+            <option value="employee">Employee</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm mb-1">Search:</label>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="p-2 border rounded-md text-slate-800"
+            placeholder="Search by name or email"
+          />
+        </div>
+      </div>
+
+      {/* Sorting Controls */}
+      <div className="mb-6">
+        <label className="block text-sm mb-1">Sort by:</label>
+        <select
+          value={sortField}
+          onChange={(e) => setSortField(e.target.value)}
+          className="p-2 border rounded-md text-slate-800"
+        >
+          <option value="firstname">First Name</option>
+          <option value="lastname">Last Name</option>
+          <option value="email">Email</option>
+          <option value="registrationNumber">Registration Number</option>
+          <option value="role">Role</option>
+        </select>
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+          className="p-2 border rounded-md text-slate-800 ml-2"
+        >
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+      </div>
+
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -174,8 +271,8 @@ const UsersManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {users.length > 0 ? (
-                users.map((user) => (
+              {currentUsers.length > 0 ? (
+                currentUsers.map((user) => (
                   <tr key={user._id} className="border-b hover:bg-slate-50">
                     <td className="p-3">
                       {user.firstname} {user.lastname}
@@ -256,6 +353,38 @@ const UsersManagement = () => {
           </table>
         </div>
       )}
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-6">
+        <div>
+          <label className="block text-sm mb-1">Items per page:</label>
+          <select
+            value={itemsPerPage}
+            onChange={handleItemsPerPageChange}
+            className="p-2 border rounded-md text-slate-800"
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+          </select>
+        </div>
+        <div className="flex space-x-2">
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index + 1}
+              onClick={() => handlePageChange(index + 1)}
+              className={`px-4 py-2 ${
+                currentPage === index + 1
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-slate-800"
+              } rounded-md hover:bg-blue-100 transition-colors`}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Add User Modal */}
       {showAddModal && (

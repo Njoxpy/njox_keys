@@ -16,23 +16,26 @@ const StudentsManagement = () => {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [studentsPerPage] = useState(10);
+  const [studentsPerPage, setStudentsPerPage] = useState(10);
   const [totalStudents, setTotalStudents] = useState(0);
+
+  // Sorting
+  const [sortField, setSortField] = useState("registrationNumber");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   useEffect(() => {
     fetchStudents();
-  }, [currentPage]);
+  }, [currentPage, studentsPerPage, sortField, sortOrder]);
 
   const fetchStudents = async () => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:3000/api/v1/students?page=${currentPage}&limit=${studentsPerPage}`
+        `http://localhost:3000/api/v1/students?page=${currentPage}&limit=${studentsPerPage}&sort=${sortField}&order=${sortOrder}`
       );
       if (!response.ok) throw new Error("Failed to fetch students");
       const data = await response.json();
 
-      // Ensure we're setting an array to students state
       if (data && data.data && Array.isArray(data.data)) {
         setStudents(data.data);
         setTotalStudents(data.totalCount || data.data.length);
@@ -40,7 +43,6 @@ const StudentsManagement = () => {
         setStudents(data);
         setTotalStudents(data.length);
       } else {
-        // If we get unexpected data structure, set an empty array
         console.error("Unexpected API response structure:", data);
         setStudents([]);
         setTotalStudents(0);
@@ -50,7 +52,7 @@ const StudentsManagement = () => {
     } catch (err) {
       console.error("Error fetching students:", err);
       setError(err.message);
-      setStudents([]); // Ensure students is always an array
+      setStudents([]);
     } finally {
       setIsLoading(false);
     }
@@ -173,7 +175,7 @@ const StudentsManagement = () => {
     setSearchTerm(e.target.value);
   };
 
-  // Ensure students is an array before filtering
+  // Filtering logic
   const filteredStudents = Array.isArray(students)
     ? students.filter(
         (student) =>
@@ -181,6 +183,15 @@ const StudentsManagement = () => {
           student.yearOfStudy.toLowerCase().includes(searchTerm.toLowerCase())
       )
     : [];
+
+  // Sorting logic
+  const sortedStudents = filteredStudents.sort((a, b) => {
+    if (sortOrder === "asc") {
+      return a[sortField] > b[sortField] ? 1 : -1;
+    } else {
+      return a[sortField] < b[sortField] ? 1 : -1;
+    }
+  });
 
   // Pagination logic
   const pageCount = Math.ceil(totalStudents / studentsPerPage);
@@ -227,6 +238,28 @@ const StudentsManagement = () => {
         </div>
       </div>
 
+      {/* Sorting Controls */}
+      <div className="mb-6">
+        <label className="block text-sm mb-1">Sort by:</label>
+        <select
+          value={sortField}
+          onChange={(e) => setSortField(e.target.value)}
+          className="p-2 border rounded-md text-slate-800"
+        >
+          <option value="registrationNumber">Registration Number</option>
+          <option value="yearOfStudy">Year of Study</option>
+          <option value="createdAt">Created At</option>
+        </select>
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+          className="p-2 border rounded-md text-slate-800 ml-2"
+        >
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+      </div>
+
       {error && (
         <div className="bg-red-100 text-red-600 p-4 mb-4 rounded-md">
           {error}
@@ -258,8 +291,8 @@ const StudentsManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredStudents.length > 0 ? (
-                  filteredStudents.map((student) => (
+                {sortedStudents.length > 0 ? (
+                  sortedStudents.map((student) => (
                     <tr
                       key={student._id}
                       className="border-t border-gray-200 hover:bg-slate-50"

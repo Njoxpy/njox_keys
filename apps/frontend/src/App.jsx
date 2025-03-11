@@ -9,26 +9,22 @@ import StudentsManagement from "./admin/components/students/StudentManagement";
 import Settings from "./admin/components/settings/Settings";
 import Bookings from "./admin/components/bookings/Booking";
 import Reports from "./admin/components/reports/Report";
+import Notification from "./admin/components/notifications/Notifications";
+import Profile from "./profile/Profile";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route>
-          <Route
-            index
-            element={
-              <h1>
-                Home <a href="/admin">admin</a>
-              </h1>
-            }
-          />
+          <Route index element={<Profile />} />
         </Route>
         {/* Dashboard Layout */}
         <Route path="/admin" element={<DashboardLayout />}>
           <Route index element={<AdminDashboardOverview />} />
           <Route path="dashboard" element={<DashboardOverview />} />
           <Route path="venues" element={<VenuesManagement />} />
+          <Route path="notifications" element={<Notification />} />
           <Route path="users" element={<UsersManagement />} />
           <Route path="bookings" element={<Bookings />} />
           <Route path="reports" element={<Reports />} />
