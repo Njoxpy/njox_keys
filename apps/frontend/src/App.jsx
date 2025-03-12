@@ -12,12 +12,28 @@ import Reports from "./admin/components/reports/Report";
 import Notification from "./admin/components/notifications/Notifications";
 import Profile from "./profile/Profile";
 
+// layout
+import RootLayout from "./layouts/RootLayout";
+
+// auth
+import Login from "./auth/Login";
+
+// errors
+import NotFound from "./errors/NotFound";
+
+import Venues from "./features/venues/Venues";
+
 function App() {
   return (
     <Router>
       <Routes>
         <Route>
-          <Route index element={<Profile />} />
+          <Route>
+            <Route index element={<RootLayout />} />
+            <Route path="login" element={<Login />} />
+            <Route path="venues" element={<Venues />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
         </Route>
         {/* Dashboard Layout */}
         <Route path="/admin" element={<DashboardLayout />}>
