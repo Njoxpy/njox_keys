@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "S:\\sande here there will be my code it does not take  big space\\key-management-system\\apps\\backend\\logs\\.0ab7cb63f6ffdbbd74c36fb32b180078c2b83d2e-audit.json",
+    "files": [
+        {
+            "date": 1741763591801,
+            "name": "S:\\sande here there will be my code it does not take  big space\\key-management-system\\apps\\backend\\logs\\2025-03-12-access.log",
+            "hash": "92c44c2771b0b16e3aeddfd9e3601e32cd17ce642371fe3adc656d1443c03cca"
+        }
+    ],
+    "hashType": "sha256"
+}
