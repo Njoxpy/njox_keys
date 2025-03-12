@@ -7,8 +7,15 @@ const Venue = require("../models/venue.model");
 // status code
 const { OK, SERVER_ERROR, BAD_REQUEST } = require("../constants/apiResponse");
 
+// auth middleware
+const { authenticate, authorize } = require("../middleware/authentication/authenticate")
+
+
 // Get venues by status (booked or available)
-status.get("/venues", async (req, res) => {
+status.get(
+  "/venues", 
+  authenticate, 
+  async (req, res) => {
   try {
     const { status } = req.query;
 
@@ -19,7 +26,7 @@ status.get("/venues", async (req, res) => {
     const venues = await Venue.find({ status: status });
 
     if (venues.length === 0) {
-      return res.status(OK).json({ data: [] });
+      return res.status(OK).json({ message: "Nothing found!" });
     }
 
     res.status(OK).json({ data: venues });
@@ -29,6 +36,5 @@ status.get("/venues", async (req, res) => {
   }
 });
 
-// http://localhost:3000/api/v1/status/venues?status=available
 
 module.exports = status;
