@@ -87,10 +87,11 @@ const Sidebar = ({ isOpen, toggleSidebar, onNavClick, className }) => {
     { name: "Dashboard", path: "/admin/dashboard", icon: Home },
     { name: "Venues", path: "/admin/venues", icon: MapPin },
     { name: "Bookings", path: "/admin/bookings", icon: Calendar },
-    { name: "Reports", path: "/admin/reports", icon: Book },
+  
     { name: "Users", path: "/admin/users", icon: Users },
-    { name: "Notifications", path: "/admin/notifications", icon: Signal },
     { name: "Students", path: "/admin/students", icon: BookOpen },
+    { name: "Reports", path: "/admin/reports", icon: Book },
+    { name: "Notifications", path: "/admin/notifications", icon: Signal },
     { name: "Settings", path: "/admin/settings", icon: Settings },
   ];
 
