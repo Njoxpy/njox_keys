@@ -40,6 +40,17 @@ app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/students", studentRoutes);
 app.use("/api/v1/reports", reportRoutes);
 
+// uploads folder - serve static files with proper CORS headers
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "../uploads"), {
+    setHeaders: (res, path, stat) => {
+      res.set("Cross-Origin-Resource-Policy", "cross-origin"); // Allow frontend to load images
+    },
+  })
+);
+
+
 var accessLogStream = rfs.createStream("accessMorgan.log", {
   interval: "1d",
   path: path.join(__dirname, "logs/morgan"),

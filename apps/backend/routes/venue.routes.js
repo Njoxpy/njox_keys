@@ -44,46 +44,27 @@ venueRoutes.post(
   authenticate,
   authorize(["admin"]),
   upload.array("images", 3), // Allow up to 3 images
-  validateVenueCreate,
   async (req, res) => {
     try {
-      const {
-        abbreviation,
-        block,
-        capacity,
-        description,
-        equipment,
-        name,
-        status,
-        venueNumber,
-      } = req.body;
+      const { abbreviation, block, capacity, description, equipment, name, status, venueNumber } = req.body;
 
       // Check if a venue with the same name already exists
-      const venueExists = await Venue.findOne({ name });
-      if (venueExists) {
-        return res
-          .status(BAD_REQUEST)
-          .json({ message: "Venue with that name already exists!" });
+      if (await Venue.findOne({ name })) {
+        return res.status(BAD_REQUEST).json({ message: "Venue with that name already exists!" });
       }
 
-      userId = req.user && req.user._id;
-      const venueNumberExists = await Venue.findOne({ venueNumber });
-
-      if (venueNumberExists) {
-        return res
-          .status(BAD_REQUEST)
-          .json({ message: "Venue with that number already exists!" });
+      if (await Venue.findOne({ venueNumber })) {
+        return res.status(BAD_REQUEST).json({ message: "Venue with that number already exists!" });
       }
 
       // Check if files were uploaded
       const files = req.files;
       if (!files || files.length === 0) {
-        return res
-          .status(BAD_REQUEST)
-          .json({ message: "No files(images) were uploaded" });
+        return res.status(BAD_REQUEST).json({ message: "No files(images) were uploaded" });
       }
 
-      const imagePaths = files.map((file) => file.path);
+      // Store only relative paths
+      const imagePaths = files.map((file) => `uploads/${file.filename}`);
 
       const newVenue = await Venue.create({
         abbreviation,
@@ -93,20 +74,15 @@ venueRoutes.post(
         equipment,
         name,
         status,
-        userId,
+        userId: req.user._id,
         venueNumber,
         images: imagePaths,
       });
 
-      res.status(CREATED).json({
-        message: "Venue added successfully!",
-        newVenue,
-      });
+      res.status(CREATED).json({ message: "Venue added successfully!", newVenue });
     } catch (error) {
       console.error("Error creating venue:", error);
-      res.status(SERVER_ERROR).json({
-        message: error.message,
-      });
+      res.status(SERVER_ERROR).json({ message: error.message });
     }
   }
 );

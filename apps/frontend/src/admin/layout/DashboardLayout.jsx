@@ -14,7 +14,7 @@ import {
   Book,
   Signal,
 } from "lucide-react";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 
 // Main App Component
 export default function AdminDashboardApp() {
@@ -82,6 +82,7 @@ function Layout() {
 
 // Sidebar Component
 const Sidebar = ({ isOpen, toggleSidebar, onNavClick, className }) => {
+  const location = useLocation();
   const navItems = [
     { name: "Dashboard", path: "/admin/dashboard", icon: Home },
     { name: "Venues", path: "/admin/venues", icon: MapPin },
@@ -105,7 +106,7 @@ const Sidebar = ({ isOpen, toggleSidebar, onNavClick, className }) => {
         {toggleSidebar && (
           <button
             onClick={toggleSidebar}
-            className="p-1 rounded-full hover:bg-slate-700 focus:outline-none"
+            className="p-1 rounded-full hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
           >
             {isOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
           </button>
@@ -117,6 +118,7 @@ const Sidebar = ({ isOpen, toggleSidebar, onNavClick, className }) => {
         <ul className="space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
+            const isActive = location.pathname === item.path;
             return (
               <li key={item.name}>
                 <Link
@@ -124,11 +126,23 @@ const Sidebar = ({ isOpen, toggleSidebar, onNavClick, className }) => {
                   onClick={onNavClick}
                   className={`
                     flex items-center w-full px-4 py-3
+                    transition-colors duration-150
                     hover:bg-slate-700
+                    focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500
                     ${isOpen ? "" : "justify-center"}
+                    ${isActive 
+                      ? "bg-slate-700 text-blue-400" 
+                      : "text-slate-300 hover:text-white"
+                    }
                   `}
                 >
-                  <Icon size={20} className={isOpen ? "mr-3" : ""} />
+                  <Icon 
+                    size={20} 
+                    className={`
+                      ${isOpen ? "mr-3" : ""} 
+                      ${isActive ? "text-blue-400" : ""}
+                    `} 
+                  />
                   {isOpen && <span>{item.name}</span>}
                 </Link>
               </li>
@@ -163,7 +177,7 @@ const Navbar = ({ pageTitle, toggleSidebar, toggleMobileMenu }) => {
         {/* Mobile Menu Button */}
         <button
           onClick={toggleMobileMenu}
-          className="mr-4 p-1 rounded-md hover:bg-slate-100 md:hidden focus:outline-none"
+          className="mr-4 p-2 rounded-lg hover:bg-slate-100 active:bg-slate-200 md:hidden focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
         >
           <Menu size={24} />
         </button>
@@ -171,7 +185,7 @@ const Navbar = ({ pageTitle, toggleSidebar, toggleMobileMenu }) => {
         {/* Desktop Toggle Button */}
         <button
           onClick={toggleSidebar}
-          className="mr-4 p-1 rounded-md hover:bg-slate-100 hidden md:block focus:outline-none"
+          className="mr-4 p-2 rounded-lg hover:bg-slate-100 active:bg-slate-200 hidden md:block focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
         >
           <Menu size={24} />
         </button>
@@ -185,22 +199,31 @@ const Navbar = ({ pageTitle, toggleSidebar, toggleMobileMenu }) => {
         <input
           type="text"
           placeholder="Search..."
-          className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+          className="w-full pl-10 pr-4 py-2 border rounded-lg text-slate-800 placeholder-slate-400
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+            hover:border-slate-300 transition-colors"
         />
       </div>
 
       {/* Action Buttons */}
       <div className="flex items-center">
         {/* Notifications */}
-        <button className="p-2 rounded-full hover:bg-slate-100 relative mr-2">
-          <Bell size={20} />
+        <button 
+          className="p-2 rounded-lg hover:bg-slate-100 active:bg-slate-200 relative mr-2 
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
+        >
+          <Bell size={20} className="text-slate-600" />
           <span className="absolute top-1 right-1 w-2 h-2 bg-blue-600 rounded-full"></span>
         </button>
 
         {/* User Avatar */}
-        <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white">
-          <span className="font-medium">JD</span>
-        </div>
+        <button 
+          className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white
+            hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 
+            focus:ring-opacity-50 transition-colors"
+        >
+          <span className="font-medium text-sm">JD</span>
+        </button>
       </div>
     </header>
   );

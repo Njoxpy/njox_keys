@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   MapPin,
   Calendar,
@@ -8,51 +8,203 @@ import {
   BarChart2,
   ArrowUpRight,
   ArrowDownRight,
+  ShoppingBag,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const DashboardOverview = () => {
-  // Sample data for the metrics
-  const metrics = [
+  const [stats, setStats] = useState({
+    totalVenues: 0,
+    totalStudents: 0,
+    totalUsers: 0,
+    availableVenues: 0,
+    totalOrders: 0,
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Sample data for metrics that we'll partially replace with API data
+  const [metrics, setMetrics] = useState([
     {
       title: "Total Venues",
-      value: 148,
+      value: 0,
       icon: MapPin,
       change: 12.5,
       increasing: true,
       color: "bg-blue-100 text-blue-600",
     },
     {
-      title: "Active Bookings",
-      value: 87,
+      title: "Available Venues",
+      value: 0,
       icon: Calendar,
       change: 8.2,
       increasing: true,
       color: "bg-green-100 text-green-600",
     },
     {
-      title: "Pending Approvals",
-      value: 24,
-      icon: Clock,
-      change: 5.1,
-      increasing: false,
+      title: "Total Orders",
+      value: 0,
+      icon: ShoppingBag,
+      change: 10.3,
+      increasing: true,
       color: "bg-orange-100 text-orange-600",
     },
     {
-      title: "Users Registered",
-      value: 1893,
+      title: "Total Users",
+      value: 0,
       icon: Users,
       change: 16.8,
       increasing: true,
       color: "bg-purple-100 text-purple-600",
     },
-  ];
+  ]);
 
-  // Sample data for charts
-  const chartData = {
-    bookings: [38, 45, 32, 50, 62, 58, 70],
-    revenue: [2800, 3200, 2950, 3800, 4200, 3950, 4800],
-  };
+  useEffect(() => {
+    const fetchStats = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('Authentication required. Please log in.');
+        }
+
+        const headers = {
+          'Authorization': `Bearer ${token}`
+        };
+
+        // Helper function to handle API response
+        const handleResponse = async (response, endpoint) => {
+          if (!response.ok) {
+            if (response.status === 401) {
+              throw new Error('Session expired. Please log in again.');
+            }
+            throw new Error(`Failed to fetch ${endpoint} data`);
+          }
+          const data = await response.json();
+          
+          // Validate response format based on endpoint
+          switch(endpoint) {
+            case 'venues':
+              if (typeof data?.venueCount !== 'number') {
+                throw new Error('Invalid venues data format');
+              }
+              break;
+            case 'students':
+              if (typeof data?.studentsCount !== 'number') {
+                throw new Error('Invalid students data format');
+              }
+              break;
+            case 'users':
+              if (typeof data?.usersCount !== 'number') {
+                throw new Error('Invalid users data format');
+              }
+              break;
+            case 'available venues':
+              if (typeof data?.venueCountAvailable !== 'number') {
+                throw new Error('Invalid available venues data format');
+              }
+              break;
+            case 'orders':
+              if (typeof data?.ordersCount !== 'number') {
+                throw new Error('Invalid orders data format');
+              }
+              break;
+          }
+          
+          return data;
+        };
+
+        // Fetch data from all endpoints
+        const venuesPromise = fetch(
+          "http://localhost:3000/api/v1/stats/total-venues",
+          { headers }
+        ).then(res => handleResponse(res, 'venues'));
+
+        const studentsPromise = fetch(
+          "http://localhost:3000/api/v1/stats/total-students",
+          { headers }
+        ).then(res => handleResponse(res, 'students'));
+
+        const usersPromise = fetch(
+          "http://localhost:3000/api/v1/stats/total-users",
+          { headers }
+        ).then(res => handleResponse(res, 'users'));
+
+        const availableVenuesPromise = fetch(
+          "http://localhost:3000/api/v1/stats/total-available",
+          { headers }
+        ).then(res => handleResponse(res, 'available venues'));
+
+        const ordersPromise = fetch(
+          "http://localhost:3000/api/v1/stats/total-orders",
+          { headers }
+        ).then(res => handleResponse(res, 'orders'));
+
+        // Resolve all promises
+        const [
+          venuesData,
+          studentsData,
+          usersData,
+          availableVenuesData,
+          ordersData,
+        ] = await Promise.all([
+          venuesPromise,
+          studentsPromise,
+          usersPromise,
+          availableVenuesPromise,
+          ordersPromise,
+        ]);
+
+        // Update stats based on API responses
+        const updatedStats = {
+          totalVenues: venuesData?.venueCount || 0,
+          totalStudents: studentsData?.studentsCount || 0,
+          totalUsers: usersData?.usersCount || 0,
+          availableVenues: availableVenuesData?.venueCountAvailable || 0,
+          totalOrders: ordersData?.ordersCount || 0,
+        };
+
+        setStats(updatedStats);
+
+        // Update metrics array with the fetched data
+        setMetrics((prevMetrics) =>
+          prevMetrics.map((metric) => {
+            if (metric.title === "Total Venues") {
+              return { ...metric, value: updatedStats.totalVenues };
+            } else if (metric.title === "Available Venues") {
+              return { ...metric, value: updatedStats.availableVenues };
+            } else if (metric.title === "Total Users") {
+              return { ...metric, value: updatedStats.totalUsers };
+            } else if (metric.title === "Total Orders") {
+              return { ...metric, value: updatedStats.totalOrders };
+            }
+            return metric;
+          })
+        );
+
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+        setError(err.message || "Failed to load data. Please try again later.");
+        // Reset stats and metrics on error
+        setStats({
+          totalVenues: 0,
+          totalStudents: 0,
+          totalUsers: 0,
+          availableVenues: 0,
+          totalOrders: 0,
+        });
+        setMetrics(prevMetrics => 
+          prevMetrics.map(metric => ({ ...metric, value: 0 }))
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   return (
     <div className="p-6 bg-slate-50 min-h-screen">
@@ -64,6 +216,13 @@ const DashboardOverview = () => {
           Welcome back! Here's a summary of your venue metrics.
         </p>
       </div>
+
+      {/* Error Display */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg">
+          {error}
+        </div>
+      )}
 
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -81,11 +240,15 @@ const DashboardOverview = () => {
                   <p className="text-sm font-medium text-slate-600 mb-1">
                     {metric.title}
                   </p>
-                  <h3 className="text-2xl font-bold text-slate-800">
-                    {metric.title === "Users Registered"
-                      ? metric.value.toLocaleString()
-                      : metric.value}
-                  </h3>
+                  {loading ? (
+                    <div className="animate-pulse h-8 w-16 bg-slate-200 rounded"></div>
+                  ) : (
+                    <h3 className="text-2xl font-bold text-slate-800">
+                      {["Total Users", "Total Orders"].includes(metric.title)
+                        ? metric.value.toLocaleString()
+                        : metric.value}
+                    </h3>
+                  )}
                 </div>
                 <div
                   className={`p-3 rounded-full ${metric.color} bg-opacity-20`}
@@ -112,158 +275,105 @@ const DashboardOverview = () => {
         })}
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Bookings Chart */}
+      {/* Student Stats Card */}
+      <div className="mb-8">
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="font-semibold text-slate-800">Booking Trends</h3>
-            <div className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-medium">
-              This Week
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-slate-800">Student Statistics</h3>
+            <div className="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-full text-xs font-medium">
+              Overview
             </div>
           </div>
 
-          <div className="flex items-end h-48">
-            {chartData.bookings.map((value, index) => (
-              <div key={index} className="flex-1 flex flex-col items-center">
-                <div
-                  className="w-full max-w-[30px] bg-blue-600 rounded-t-sm mx-1"
-                  style={{ height: `${(value / 70) * 100}%` }}
-                ></div>
-                <span className="text-xs text-slate-500 mt-2">
-                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index]}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Revenue Chart */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="font-semibold text-slate-800">Revenue Overview</h3>
-            <div className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-medium">
-              This Week
-            </div>
-          </div>
-
-          <div className="flex items-center mb-4">
-            <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-white mr-4">
-              <TrendingUp size={20} />
+          <div className="flex items-center">
+            <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 mr-4">
+              <Users size={20} />
             </div>
             <div>
-              <h4 className="text-2xl font-bold text-slate-800">$24,950</h4>
-              <p className="text-xs text-slate-500">Total revenue this week</p>
+              <h4 className="text-2xl font-bold text-slate-800">
+                {loading ? (
+                  <div className="animate-pulse h-8 w-16 bg-slate-200 rounded"></div>
+                ) : (
+                  stats.totalStudents.toLocaleString()
+                )}
+              </h4>
+              <p className="text-sm text-slate-600">
+                Total registered students
+              </p>
             </div>
-            <div className="ml-auto flex items-center text-green-600 text-sm font-medium">
-              <ArrowUpRight size={16} className="mr-1" />
-              18.2%
+            <div className="ml-auto">
+              <Link to="/admin/students">
+                <button className="px-4 py-2 bg-indigo-100 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-200 transition-colors">
+                  View Details
+                </button>
+              </Link>
             </div>
-          </div>
-
-          <div className="flex items-end h-32">
-            {chartData.revenue.map((value, index) => (
-              <div key={index} className="flex-1 flex flex-col items-center">
-                <div
-                  className="w-full max-w-[30px] bg-slate-800 rounded-t-sm mx-1"
-                  style={{ height: `${(value / 5000) * 100}%` }}
-                ></div>
-                <span className="text-xs text-slate-500 mt-2">
-                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index]}
-                </span>
-              </div>
-            ))}
           </div>
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Activity */}
-        <div className="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
-          <h3 className="font-semibold text-slate-800 mb-4">Recent Activity</h3>
+      {/* Performance Snapshot */}
+      <div className="bg-slate-800 rounded-lg shadow-sm p-6 text-white mb-8">
+        <h3 className="font-semibold mb-4">Performance Snapshot</h3>
 
-          <div className="space-y-4">
-            {[
-              {
-                action: "New booking confirmed",
-                venue: "Studio A",
-                time: "10 minutes ago",
-              },
-              {
-                action: "User registration",
-                venue: "James Wilson",
-                time: "45 minutes ago",
-              },
-              {
-                action: "Venue approved",
-                venue: "Conference Hall B",
-                time: "2 hours ago",
-              },
-              {
-                action: "Payment received",
-                venue: "Workshop Space",
-                time: "3 hours ago",
-              },
-            ].map((activity, index) => (
-              <div
-                key={index}
-                className="flex items-start pb-4 border-b border-slate-100 last:border-0"
-              >
-                <div className="mr-4 mt-1">
-                  <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+        <div className="space-y-6">
+          {[
+            {
+              label: "Available Venues",
+              value: loading
+                ? "Loading..."
+                : `${stats.availableVenues} (${
+                    stats.totalVenues > 0
+                      ? Math.round(
+                          (stats.availableVenues / stats.totalVenues) * 100
+                        )
+                      : 0
+                  }%)`,
+              icon: MapPin,
+            },
+            {
+              label: "Total Venue Capacity",
+              value: loading
+                ? "Loading..."
+                : stats.totalVenues.toLocaleString(),
+              icon: Calendar,
+            },
+            {
+              label: "Venue Utilization",
+              value: loading
+                ? "Loading..."
+                : stats.totalVenues > 0
+                ? `${Math.round(
+                    ((stats.totalVenues - stats.availableVenues) /
+                      stats.totalVenues) *
+                      100
+                  )}%`
+                : "N/A",
+              icon: TrendingUp,
+            },
+          ].map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <div key={index} className="flex items-center">
+                <div className="w-10 h-10 rounded-lg bg-slate-700 flex items-center justify-center mr-4">
+                  <Icon size={18} />
                 </div>
-                <div className="flex-1">
-                  <p className="font-medium text-slate-800">
-                    {activity.action}
-                  </p>
-                  <p className="text-sm text-slate-600">{activity.venue}</p>
+                <div>
+                  <p className="text-sm text-slate-400">{stat.label}</p>
+                  <p className="text-lg font-bold">{stat.value}</p>
                 </div>
-                <span className="text-xs text-slate-500">{activity.time}</span>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
-
-        {/* Quick Stats */}
-        <div className="bg-slate-800 rounded-lg shadow-sm p-6 text-white">
-          <h3 className="font-semibold mb-4">Performance Snapshot</h3>
-
-          <div className="space-y-6">
-            {[
-              {
-                label: "Average Booking Value",
-                value: "$342.50",
-                icon: BarChart2,
-              },
-              { label: "Conversion Rate", value: "24.8%", icon: TrendingUp },
-              { label: "Active Venues", value: "91%", icon: MapPin },
-            ].map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <div key={index} className="flex items-center">
-                  <div className="w-10 h-10 rounded-lg bg-slate-700 flex items-center justify-center mr-4">
-                    <Icon size={18} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-400">{stat.label}</p>
-                    <p className="text-lg font-bold">{stat.value}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <Link to={"/admin/reports"}>
-            <button className="w-full mt-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors">
-              View Full Report
-            </button>
-          </Link>
-        </div>
+        <Link to={"/admin/venues"}>
+          <button className="w-full mt-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors">
+            View Full Report
+          </button>
+        </Link>
       </div>
     </div>
   );
 };
 
 export default DashboardOverview;
-
-// https://key-management-system.vercel.app/admin

@@ -15,11 +15,6 @@ const Student = require("../models/student.model");
 const getVenuesListCount = async (req, res) => {
   try {
     const venueCount = await Venue.countDocuments();
-
-    if (venueCount === 0) {
-      return res.status(OK).json({ message: "There is no venue for now!" });
-    }
-
     res.status(OK).json({ venueCount });
   } catch (error) {
     res.status(SERVER_ERROR).json({
@@ -34,12 +29,6 @@ const getAvailableVenuesCount = async (req, res) => {
   try {
     const venueCountAvailable = await Venue.countDocuments();
 
-    if (venueCountAvailable === 0) {
-      return res
-        .status(OK)
-        .json({ message: "There is no venue available for booking for now!" });
-    }
-
     res.status(OK).json({ venueCountAvailable });
   } catch (error) {
     res.status(SERVER_ERROR).json({
@@ -52,12 +41,6 @@ const getAvailableVenuesCount = async (req, res) => {
 const getBookedVenuesCount = async (req, res) => {
   try {
     const venueCountBooked = await Venue.countDocuments({ status: "booked" });
-
-    if (venueCountBooked === 0) {
-      return res
-        .status(OK)
-        .json({ message: "No venue booked!, count is zero" });
-    }
 
     res.status(OK).json({ venueCountBooked });
   } catch (error) {
@@ -79,12 +62,6 @@ const getTotalVenueOrders = async (req, res) => {
   try {
     const ordersCount = await Order.countDocuments();
 
-    if (ordersCount === 0) {
-      return res
-        .status(OK)
-        .json({ message: "There are current 0 orders for now!" });
-    }
-
     res.status(OK).json({ ordersCount });
   } catch (error) {
     res
@@ -104,10 +81,6 @@ const getTotalVenueOrdersStatus = async (req, res) => {
 
     const orderCount = await Order.countDocuments({ status });
 
-    if (orderCount === 0) {
-      return res.status(OK).json({ message: "No orders found!" });
-    }
-
     res.status(OK).json({ count: orderCount });
   } catch (error) {
     res
@@ -120,10 +93,6 @@ const getTotalVenueOrdersStatus = async (req, res) => {
 const totalUsersCount = async (req, res) => {
   try {
     const usersCount = await User.countDocuments();
-
-    if (usersCount === 0) {
-      return res.status(OK).json({ message: "No users" });
-    }
 
     res.status(OK).json({ usersCount });
   } catch (error) {
@@ -148,11 +117,6 @@ const getAdminEmployeeCount = async (req, res) => {
     // Count users with the given role
     const count = await User.countDocuments({ role });
 
-    // Check if no users with the given role
-    if (count === 0) {
-      return res.status(OK).json({ message: `No ${role}s for now!` });
-    }
-
     // Return the count of users with the specified role
     res.status(OK).json({ count });
   } catch (error) {
@@ -167,12 +131,6 @@ const getAdminEmployeeCount = async (req, res) => {
 const getTotalStudents = async (req, res) => {
   try {
     const studentsCount = await Student.countDocuments().sort({ createAt: -1 });
-
-    if (studentsCount === 0) {
-      return res
-        .status(OK)
-        .json({ message: "There are current no students for now!" });
-    }
 
     res.status(OK).json({ studentsCount });
   } catch (error) {
