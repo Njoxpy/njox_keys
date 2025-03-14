@@ -15,6 +15,7 @@ import {
   Signal,
 } from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
+import { User } from "react-feather";
 
 // Main App Component
 export default function AdminDashboardApp() {
@@ -93,6 +94,7 @@ const Sidebar = ({ isOpen, toggleSidebar, onNavClick, className }) => {
     { name: "Reports", path: "/admin/reports", icon: Book },
     { name: "Notifications", path: "/admin/notifications", icon: Signal },
     { name: "Settings", path: "/admin/settings", icon: Settings },
+    { name: "Profile", path: "/admin/profile", icon: User },
   ];
 
   return (
@@ -157,10 +159,10 @@ const Sidebar = ({ isOpen, toggleSidebar, onNavClick, className }) => {
         <div className="p-4 border-t border-slate-700">
           <div className="flex items-center">
             <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center mr-3">
-              <span className="font-medium">JD</span>
+              <span className="font-medium">ADM</span>
             </div>
             <div>
-              <p className="font-medium">Godbless Nyagawa</p>
+              <p className="font-medium">{localStorage.getItem('userEmail')}</p>
               <p className="text-sm text-slate-400">Administrator</p>
             </div>
           </div>
@@ -223,7 +225,7 @@ const Navbar = ({ pageTitle, toggleSidebar, toggleMobileMenu }) => {
             hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 
             focus:ring-opacity-50 transition-colors"
         >
-          <span className="font-medium text-sm">JD</span>
+          <span className="font-medium text-sm">ADM</span>
         </button>
       </div>
     </header>

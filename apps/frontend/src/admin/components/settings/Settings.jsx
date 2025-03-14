@@ -1,8 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { User } from "lucide-react";
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState("profile");
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    const userEmail = localStorage.getItem("userEmail");
+    if (userEmail) {
+      setEmail(userEmail);
+    }
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle email update logic here
+  };
 
   const tabs = [
     { id: "profile", label: "Profile", icon: <User className="w-5 h-5" /> },
@@ -46,26 +59,10 @@ const SettingsPage = () => {
                     Profile Settings
                   </h3>
                   <p className="mt-1 text-sm text-gray-500">
-                    Update your account information
+                    Update your email address
                   </p>
 
-                  <div className="mt-6 space-y-6">
-                    <div>
-                      <label
-                        htmlFor="name"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        id="name"
-                        defaultValue="Admin User"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-
+                  <form onSubmit={handleSubmit} className="mt-6">
                     <div>
                       <label
                         htmlFor="email"
@@ -77,36 +74,22 @@ const SettingsPage = () => {
                         type="email"
                         name="email"
                         id="email"
-                        defaultValue="admin@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        required
                       />
                     </div>
 
-                    <div>
-                      <label
-                        htmlFor="title"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Title
-                      </label>
-                      <input
-                        type="text"
-                        name="title"
-                        id="title"
-                        defaultValue="System Administrator"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-
-                    <div className="flex justify-end">
+                    <div className="flex justify-end mt-6">
                       <button
-                        type="button"
+                        type="submit"
                         className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 text-sm"
                       >
                         Save Changes
                       </button>
                     </div>
-                  </div>
+                  </form>
                 </div>
               )}
             </div>

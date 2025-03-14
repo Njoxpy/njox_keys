@@ -126,19 +126,79 @@ const UsersManagement = () => {
     fetchUsers();
   }, [currentPage, itemsPerPage, sortField, sortOrder]);
 
+  // Form validation
+  const validateForm = () => {
+    const errors = {};
+
+    // Firstname validation
+    if (!formData.firstname || formData.firstname.length < 2 || formData.firstname.length > 35) {
+      errors.firstname = "First name should be between 2 and 35 characters";
+    }
+
+    // Lastname validation
+    if (!formData.lastname || formData.lastname.length < 2 || formData.lastname.length > 35) {
+      errors.lastname = "Last name should be between 2 and 35 characters";
+    }
+
+    // Email validation
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!formData.email || !emailRegex.test(formData.email)) {
+      errors.email = "Invalid email format";
+    }
+
+    // Registration number validation
+    const regNumberStr = formData.registrationNumber.toString();
+    if (!formData.registrationNumber || !/^\d{10}$/.test(regNumberStr)) {
+      errors.registrationNumber = "Registration number must be exactly 10 digits";
+    }
+
+    // Password validation
+    if (!formData.password || !isStrongPassword(formData.password)) {
+      errors.password = "Password must be at least 8 characters long, with at least one lowercase letter, one uppercase letter, one number, and one special character.";
+    }
+
+    // Role validation
+    if (!formData.role || !["admin", "employee"].includes(formData.role)) {
+      errors.role = "Role must be either 'admin' or 'employee'";
+    }
+
+    return errors;
+  };
+
+  const isStrongPassword = (password) => {
+    return password.length >= 8 &&
+      /[a-z]/.test(password) &&
+      /[A-Z]/.test(password) &&
+      /[0-9]/.test(password) &&
+      /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  };
+
   // Add user handler
   const handleAddUser = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
+
+    // Validate form
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setError(Object.values(validationErrors)[0]); // Show first error
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${baseURL}/api/v1/users`, {
+      const response = await fetch(`${baseURL}/api/v1/users/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          registrationNumber: parseInt(formData.registrationNumber, 10)
+        }),
       });
 
       const data = await response.json();
@@ -147,6 +207,130 @@ const UsersManagement = () => {
       }
 
       setShowAddModal(false);
+      resetForm();
+      fetchUsers(); // Refresh the list
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Initialize edit modal with user data
+  const handleEditClick = (user) => {
+    setCurrentUser(user);
+    setFormData({
+      firstname: user.firstname || "",
+      lastname: user.lastname || "",
+      email: user.email || "",
+      registrationNumber: user.registrationNumber || "",
+      password: "", // Empty password field for edit
+      role: user.role || "",
+    });
+    setShowEditModal(true);
+  };
+
+  // Validate edit form - only validate fields that have been changed
+  const validateEditForm = (originalUser, newData) => {
+    const errors = {};
+    
+    // Only validate fields that have been modified
+    if (newData.firstname !== originalUser.firstname) {
+      if (newData.firstname.length < 2 || newData.firstname.length > 35) {
+        errors.firstname = "First name should be between 2 and 35 characters";
+      }
+    }
+
+    if (newData.lastname !== originalUser.lastname) {
+      if (newData.lastname.length < 2 || newData.lastname.length > 35) {
+        errors.lastname = "Last name should be between 2 and 35 characters";
+      }
+    }
+
+    if (newData.email !== originalUser.email) {
+      const emailRegex = /^\S+@\S+\.\S+$/;
+      if (!emailRegex.test(newData.email)) {
+        errors.email = "Invalid email format";
+      }
+    }
+
+    if (newData.registrationNumber !== originalUser.registrationNumber) {
+      const regNumberStr = newData.registrationNumber.toString();
+      if (!/^\d{10}$/.test(regNumberStr)) {
+        errors.registrationNumber = "Registration number must be exactly 10 digits";
+      }
+    }
+
+    if (newData.password) {
+      if (!isStrongPassword(newData.password)) {
+        errors.password = "Password must be at least 8 characters long, with at least one lowercase letter, one uppercase letter, one number, and one special character.";
+      }
+    }
+
+    if (newData.role !== originalUser.role) {
+      if (!["admin", "employee"].includes(newData.role)) {
+        errors.role = "Role must be either 'admin' or 'employee'";
+      }
+    }
+
+    return errors;
+  };
+
+  // Handle edit user submission
+  const handleEditUser = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    // Get only the changed fields
+    const changedFields = {};
+    Object.keys(formData).forEach(key => {
+      // Include field if it's different from current user data or if it's a password
+      if (key === 'password') {
+        if (formData[key]) { // Only include password if it was entered
+          changedFields[key] = formData[key];
+        }
+      } else if (formData[key] !== currentUser[key]) {
+        changedFields[key] = formData[key];
+      }
+    });
+
+    // If no fields were changed, close the modal
+    if (Object.keys(changedFields).length === 0) {
+      setShowEditModal(false);
+      resetForm();
+      return;
+    }
+
+    // Validate only changed fields
+    const validationErrors = validateEditForm(currentUser, formData);
+    if (Object.keys(validationErrors).length > 0) {
+      setError(Object.values(validationErrors)[0]);
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${baseURL}/api/v1/users/${currentUser._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...changedFields,
+          registrationNumber: changedFields.registrationNumber ? 
+            parseInt(changedFields.registrationNumber, 10) : undefined
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update user");
+      }
+
+      setShowEditModal(false);
       resetForm();
       fetchUsers(); // Refresh the list
     } catch (err) {
@@ -296,10 +480,7 @@ const UsersManagement = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
-                          onClick={() => {
-                            setCurrentUser(user);
-                            setShowEditModal(true);
-                          }}
+                          onClick={() => handleEditClick(user)}
                           className="text-blue-600 hover:text-blue-900 mr-4"
                         >
                           Edit
@@ -383,54 +564,58 @@ const UsersManagement = () => {
       {/* Add User Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="flex justify-between items-center bg-slate-800 text-white px-6 py-4 rounded-t-lg">
-              <h3 className="text-lg font-semibold">Add New User</h3>
+          <div className="bg-white rounded-lg w-full max-w-md p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-slate-800">Add New User</h2>
               <button
                 onClick={() => {
                   setShowAddModal(false);
                   resetForm();
                 }}
-                className="p-1 rounded-full hover:bg-slate-700 transition-colors"
+                className="text-slate-500 hover:text-slate-700"
               >
-                <X size={20} />
+                <X size={24} />
               </button>
             </div>
 
-            <form onSubmit={handleAddUser} className="p-6">
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                      First Name
-                    </label>
-                    <input
-                      type="text"
-                      name="firstname"
-                      value={formData.firstname}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border border-slate-300 rounded-lg 
-                        focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent
-                        hover:border-slate-400 transition-colors"
-                      required
-                    />
-                  </div>
+            <form onSubmit={handleAddUser}>
+              {error && (
+                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                  {error}
+                </div>
+              )}
 
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      name="lastname"
-                      value={formData.lastname}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border border-slate-300 rounded-lg 
-                        focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent
-                        hover:border-slate-400 transition-colors"
-                      required
-                    />
-                  </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    name="firstname"
+                    value={formData.firstname}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    required
+                    minLength={2}
+                    maxLength={35}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    name="lastname"
+                    value={formData.lastname}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    required
+                    minLength={2}
+                    maxLength={35}
+                  />
                 </div>
 
                 <div>
@@ -442,10 +627,9 @@ const UsersManagement = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-slate-300 rounded-lg 
-                      focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent
-                      hover:border-slate-400 transition-colors"
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                     required
+                    pattern="\S+@\S+\.\S+"
                   />
                 </div>
 
@@ -454,18 +638,14 @@ const UsersManagement = () => {
                     Registration Number
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     name="registrationNumber"
                     value={formData.registrationNumber}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-slate-300 rounded-lg 
-                      focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent
-                      hover:border-slate-400 transition-colors"
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                     required
-                    pattern="\d{15}"
-                    title="Registration number must be exactly 15 digits"
+                    pattern="\d{10}"
                   />
-                  <p className="mt-1 text-sm text-slate-500">Must be exactly 15 digits</p>
                 </div>
 
                 <div>
@@ -477,13 +657,12 @@ const UsersManagement = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-slate-300 rounded-lg 
-                      focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent
-                      hover:border-slate-400 transition-colors"
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                     required
-                    minLength={6}
                   />
-                  <p className="mt-1 text-sm text-slate-500">Minimum 6 characters</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Must be at least 8 characters with 1 uppercase, 1 lowercase, 1 number, and 1 special character
+                  </p>
                 </div>
 
                 <div>
@@ -494,44 +673,31 @@ const UsersManagement = () => {
                     name="role"
                     value={formData.role}
                     onChange={handleInputChange}
-                    className="w-full p-2 border border-slate-300 rounded-lg 
-                      focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent
-                      hover:border-slate-400 transition-colors"
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                     required
                   >
-                    <option value="">Select a role</option>
-                    <option value="employee">Employee</option>
+                    <option value="">Select Role</option>
                     <option value="admin">Admin</option>
+                    <option value="employee">Employee</option>
                   </select>
                 </div>
               </div>
 
-              {error && (
-                <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-lg">
-                  {error}
-                </div>
-              )}
-
-              <div className="mt-6 flex justify-end gap-3">
+              <div className="mt-6 flex justify-end space-x-3">
                 <button
                   type="button"
                   onClick={() => {
                     setShowAddModal(false);
                     resetForm();
                   }}
-                  className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg 
-                    hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 
-                    focus:ring-opacity-50 transition-colors"
+                  className="px-4 py-2 text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200"
                   disabled={isSubmitting}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-slate-800 text-white rounded-lg 
-                    hover:bg-slate-700 focus:outline-none focus:ring-2 
-                    focus:ring-slate-500 focus:ring-opacity-50 
-                    transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 disabled:opacity-50"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Adding..." : "Add User"}
@@ -557,48 +723,13 @@ const UsersManagement = () => {
               </button>
             </div>
 
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              setIsSubmitting(true);
-              try {
-                const token = localStorage.getItem("token");
-                const response = fetch(
-                  `${baseURL}/api/v1/users/${currentUser._id}`,
-                  {
-                    method: "PUT",
-                    headers: {
-                      "Content-Type": "application/json",
-                      Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(formData),
-                  }
-                );
+            <form onSubmit={handleEditUser} className="p-6">
+              {error && (
+                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                  {error}
+                </div>
+              )}
 
-                response.then((res) => {
-                  if (!res.ok) {
-                    throw new Error(res.statusText);
-                  }
-                  return res.json();
-                })
-                .then((data) => {
-                  setUsers((prevUsers) =>
-                    prevUsers.map((user) =>
-                      user._id === currentUser._id ? data.user : user
-                    )
-                  );
-                  setShowEditModal(false);
-                  setError(null);
-                })
-                .catch((err) => {
-                  setError(err.message);
-                })
-                .finally(() => {
-                  setIsSubmitting(false);
-                });
-              } catch (err) {
-                setError(err.message);
-              }
-            }} className="p-6">
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -613,7 +744,7 @@ const UsersManagement = () => {
                       className="w-full p-2 border border-slate-300 rounded-lg 
                         focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent
                         hover:border-slate-400 transition-colors"
-                      required
+                      placeholder={currentUser?.firstname}
                     />
                   </div>
 
@@ -629,7 +760,7 @@ const UsersManagement = () => {
                       className="w-full p-2 border border-slate-300 rounded-lg 
                         focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent
                         hover:border-slate-400 transition-colors"
-                      required
+                      placeholder={currentUser?.lastname}
                     />
                   </div>
                 </div>
@@ -646,7 +777,7 @@ const UsersManagement = () => {
                     className="w-full p-2 border border-slate-300 rounded-lg 
                       focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent
                       hover:border-slate-400 transition-colors"
-                    required
+                    placeholder={currentUser?.email}
                   />
                 </div>
 
@@ -655,18 +786,35 @@ const UsersManagement = () => {
                     Registration Number
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     name="registrationNumber"
                     value={formData.registrationNumber}
                     onChange={handleInputChange}
                     className="w-full p-2 border border-slate-300 rounded-lg 
                       focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent
                       hover:border-slate-400 transition-colors"
-                    required
-                    pattern="\d{15}"
-                    title="Registration number must be exactly 15 digits"
+                    placeholder={currentUser?.registrationNumber}
                   />
-                  <p className="mt-1 text-sm text-slate-500">Must be exactly 15 digits</p>
+                  <p className="mt-1 text-sm text-slate-500">Must be exactly 10 digits</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-slate-300 rounded-lg 
+                      focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent
+                      hover:border-slate-400 transition-colors"
+                    placeholder="Leave empty to keep current password"
+                  />
+                  <p className="mt-1 text-sm text-slate-500">
+                    Leave empty to keep current password, or enter a new password with at least 8 characters, 1 uppercase, 1 lowercase, 1 number, and 1 special character
+                  </p>
                 </div>
 
                 <div>
@@ -680,7 +828,6 @@ const UsersManagement = () => {
                     className="w-full p-2 border border-slate-300 rounded-lg 
                       focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent
                       hover:border-slate-400 transition-colors"
-                    required
                   >
                     <option value="">Select a role</option>
                     <option value="employee">Employee</option>

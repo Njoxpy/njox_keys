@@ -22,6 +22,7 @@ import Login from "./auth/Login";
 import NotFound from "./errors/NotFound";
 
 import Venues from "./features/venues/Venues";
+import ProfilePage from "./admin/components/profile/Profile";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
           <Route index element={<AdminDashboardOverview />} />
           <Route path="dashboard" element={<DashboardOverview />} />
           <Route path="venues" element={<VenuesManagement />} />
+          <Route path="profile" element={<ProfilePage />} />
           <Route path="notifications" element={<Notification />} />
           <Route path="users" element={<UsersManagement />} />
           <Route path="bookings" element={<Bookings />} />

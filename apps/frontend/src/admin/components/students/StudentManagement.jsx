@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { X } from "react-feather";
 
 const StudentsManagement = () => {
   const [students, setStudents] = useState([]);
@@ -162,23 +163,81 @@ const StudentsManagement = () => {
     }
   };
 
+  const validateEditForm = (originalStudent, newData) => {
+    const errors = {};
+    
+    // Only validate fields that have been modified
+    if (newData.registrationNumber !== originalStudent.registrationNumber) {
+      // Check if registration number is a valid number
+      const regNumber = Number(newData.registrationNumber);
+      if (isNaN(regNumber)) {
+        errors.registrationNumber = "Registration number must be a number";
+      }
+      // Check if registration number is exactly 14 digits
+      else if (!/^\d{14}$/.test(regNumber.toString())) {
+        errors.registrationNumber = "Registration number must be exactly 14 digits";
+      }
+    }
+
+    if (newData.yearOfStudy !== originalStudent.yearOfStudy) {
+      // Check year of study format (YYYY/YYYY)
+      if (!/^\d{4}\/\d{4}$/.test(newData.yearOfStudy)) {
+        errors.yearOfStudy = "Year of study must be in the format 'YYYY/YYYY' (e.g., 2024/2025)";
+      }
+    }
+
+    return errors;
+  };
+
+  const handleEditClick = (student) => {
+    setCurrentStudent(student);
+    setFormData({
+      registrationNumber: student.registrationNumber?.toString() || "",
+      yearOfStudy: student.yearOfStudy || "",
+    });
+    setShowEditModal(true);
+  };
+
   const handleEditStudent = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    setError(null);
+
+    // Get only the changed fields
+    const changedFields = {};
+    Object.keys(formData).forEach(key => {
+      if (formData[key] !== currentStudent[key]?.toString()) {
+        changedFields[key] = formData[key];
+      }
+    });
+
+    // If no fields were changed, close the modal
+    if (Object.keys(changedFields).length === 0) {
+      setShowEditModal(false);
+      resetForm();
+      return;
+    }
+
+    // Validate only changed fields
+    const validationErrors = validateEditForm(currentStudent, formData);
+    if (Object.keys(validationErrors).length > 0) {
+      setError(Object.values(validationErrors)[0]);
+      return;
+    }
 
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
         `http://localhost:3000/api/v1/students/${currentStudent._id}`,
         {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            ...formData,
-            registrationNumber: Number(formData.registrationNumber)
+            ...changedFields,
+            registrationNumber: changedFields.registrationNumber ? 
+              Number(changedFields.registrationNumber) : undefined
           }),
         }
       );
@@ -190,6 +249,7 @@ const StudentsManagement = () => {
 
       await fetchStudents();
       setShowEditModal(false);
+      resetForm();
       toast.success("Student updated successfully");
     } catch (err) {
       setError(err.message);
@@ -222,15 +282,6 @@ const StudentsManagement = () => {
       setError(err.message);
       toast.error(err.message);
     }
-  };
-
-  const openEditModal = (student) => {
-    setCurrentStudent(student);
-    setFormData({
-      registrationNumber: student.registrationNumber.toString(),
-      yearOfStudy: student.yearOfStudy,
-    });
-    setShowEditModal(true);
   };
 
   const openDeleteModal = (student) => {
@@ -353,14 +404,7 @@ const StudentsManagement = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end space-x-2">
                           <button
-                            onClick={() => {
-                              setCurrentStudent(student);
-                              setFormData({
-                                registrationNumber: student.registrationNumber.toString(),
-                                yearOfStudy: student.yearOfStudy,
-                              });
-                              setShowEditModal(true);
-                            }}
+                            onClick={() => handleEditClick(student)}
                             className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
                           >
                             Edit
@@ -474,11 +518,90 @@ const StudentsManagement = () => {
                       type="submit"
                       className="px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors"
                     >
-                      {showAddModal ? "Add Student" : "Save Changes"}
+                      {showAddModal ? "Add Student" : "Update Student"}
                     </button>
                   </div>
                 </form>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Student Modal */}
+        {showEditModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg w-full max-w-md p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-slate-800">Edit Student</h2>
+                <button
+                  onClick={() => {
+                    setShowEditModal(false);
+                    resetForm();
+                  }}
+                  className="text-slate-500 hover:text-slate-700"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <form onSubmit={handleEditStudent}>
+                {error && (
+                  <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {error}
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Registration Number
+                    </label>
+                    <input
+                      type="text"
+                      name="registrationNumber"
+                      value={formData.registrationNumber}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                      placeholder={currentStudent?.registrationNumber}
+                    />
+                    <p className="mt-1 text-sm text-slate-500">Must be exactly 14 digits</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Year of Study
+                    </label>
+                    <input
+                      type="text"
+                      name="yearOfStudy"
+                      value={formData.yearOfStudy}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                      placeholder={currentStudent?.yearOfStudy}
+                    />
+                    <p className="mt-1 text-sm text-slate-500">Format: YYYY/YYYY (e.g., 2024/2025)</p>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEditModal(false);
+                      resetForm();
+                    }}
+                    className="px-4 py-2 text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700"
+                  >
+                    Update Student
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import Venue from "../../assets/venue.jpg";
+import { Book } from "react-feather";
 
 const baseURL = "http://localhost:3000"; // Base URL for fetching images
 
@@ -524,6 +525,7 @@ const VenuesManagement = () => {
                       <span className="text-sm">{venue.block || 'N/A'}</span>
                     </div>
 
+
                     <div className="flex items-center text-slate-600 mb-2">
                       <Users size={16} className="mr-1" />
                       <span className="text-sm">Capacity: {venue.capacity || 'N/A'}</span>
@@ -534,6 +536,12 @@ const VenuesManagement = () => {
                       <span className="text-sm">
                         Venue Number: {venue.venueNumber || 'N/A'}
                       </span>
+                    </div>
+
+                    
+                    <div className="flex items-center text-slate-600 mb-2">
+                      <Book size={16} className="mr-1" />
+                      <span className="text-sm">Description: {venue.description || 'N/A'}</span>
                     </div>
 
                     <div className="mt-3">

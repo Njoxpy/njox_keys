@@ -18,8 +18,9 @@ const LoginPage = () => {
     try {
       const response = await API.post("/users/login", { email, password });
 
-      // Assuming the API response contains a token
+      // Store token and email in localStorage
       localStorage.setItem("token", response.data.token);
+      localStorage.setItem("userEmail", email);
       console.log("Login successful:", response.data);
 
       // Redirect to dashboard or home
