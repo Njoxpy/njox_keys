@@ -8,7 +8,7 @@ const RootLayout = () => {
       {/* Header */}
       <header className="bg-slate-800 text-white shadow-md">
         <div className="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
-          Logo
+          <Link to={"/"}>KMS</Link>
           {/* Navigation */}
           <nav className="flex flex-wrap gap-4 items-center">
             <Link
