@@ -71,14 +71,12 @@ const VenueDetailsPage = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-xl font-semibold text-slate-800 mb-2">
-                  Request a key
+                  Request Your Access Key
                 </h3>
                 <p className="text-slate-600 max-w-xl">
-                  This project is designed to help developers about the
-                  architecture of the key management system. It's built using
-                  MkDocs, a static site generator that's easy to use and
-                  configure. It helps you create beautiful documentation with
-                  Markdown.
+                  This system helps universities efficiently manage access keys
+                  for their facilities, making it simple to track and control
+                  who has access at any time.
                 </p>
               </div>
 
