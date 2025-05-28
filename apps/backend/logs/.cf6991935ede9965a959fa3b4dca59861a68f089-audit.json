@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "/home/njox/Desktop/gitProjects/key-management-system/apps/backend/logs/.cf6991935ede9965a959fa3b4dca59861a68f089-audit.json",
+    "files": [
+        {
+            "date": 1748426077401,
+            "name": "/home/njox/Desktop/gitProjects/key-management-system/apps/backend/logs/2025-05-28-access.log",
+            "hash": "a53678db76f610594adf1fd81b0c4618d682d0e89325bd771b62f879efbec419"
+        }
+    ],
+    "hashType": "sha256"
+}
