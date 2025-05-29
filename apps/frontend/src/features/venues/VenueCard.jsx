@@ -1,5 +1,7 @@
 // src/components/VenueCard.jsx
 
+import { Link } from "react-router-dom";
+
 const VenueCard = ({ venue }) => {
   return (
     <div className="bg-white text-slate-800 rounded-2xl shadow-md hover:shadow-lg transition p-4 flex flex-col">
@@ -14,12 +16,11 @@ const VenueCard = ({ venue }) => {
       <span className="text-blue-600 bg-blue-100 px-2 py-1 text-xs rounded-full w-max mb-2">
         {venue.status}
       </span>
-      <button
-        onClick={() => console.log("View Details:", venue.name)}
-        className="mt-auto bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 text-sm"
-      >
-        View Details
-      </button>
+      <Link to={venue.name}>
+        <button className="mt-auto bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 text-sm">
+          View Details
+        </button>
+      </Link>
     </div>
   );
 };

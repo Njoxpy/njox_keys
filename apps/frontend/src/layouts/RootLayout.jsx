@@ -2,13 +2,22 @@ import React from "react";
 import { Outlet, Link } from "react-router-dom";
 import { Home, Package, Clock, LogIn } from "lucide-react";
 
+// logo
+import Logo from "../assets/logo/logo.png";
+
 const RootLayout = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Header */}
       <header className="bg-slate-800 text-white shadow-md">
         <div className="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
-          <Link to={"/"}>KMS</Link>
+          <Link to={"/"}>
+            <img
+              src={Logo}
+              alt="KMS Logo"
+              className="h-8 sm:h-10 md:h-12 lg:h-16 w-auto"
+            />
+          </Link>
           {/* Navigation */}
           <nav className="flex flex-wrap gap-4 items-center">
             <Link

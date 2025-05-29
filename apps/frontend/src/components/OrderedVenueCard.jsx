@@ -1,9 +1,10 @@
-import React from 'react';
+import React from "react";
+import { Link } from "react-router-dom";
 
 const OrderedVenueCard = ({ venue }) => {
-  const formattedDate = new Date(venue.orderDate).toLocaleString('en-US', {
-    month: 'long',
-    year: 'numeric',
+  const formattedDate = new Date(venue.orderDate).toLocaleString("en-US", {
+    month: "long",
+    year: "numeric",
   });
 
   return (
@@ -21,9 +22,11 @@ const OrderedVenueCard = ({ venue }) => {
             Ordered by {venue.orderedBy} on {formattedDate}
           </p>
         </div>
-        <button className="text-blue-600 bg-blue-100 rounded-full px-3 py-1 text-sm mt-2 md:mt-0">
-          View More
-        </button>
+        <Link to={`orders/22`}>
+          <button className="text-blue-600 bg-blue-100 rounded-full px-3 py-1 text-sm mt-2 md:mt-0">
+            View More
+          </button>
+        </Link>
       </div>
     </div>
   );
