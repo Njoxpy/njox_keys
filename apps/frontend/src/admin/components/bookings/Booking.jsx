@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Search, Filter, Trash2, KeyRound } from "lucide-react";
 
-const baseURL = "http://localhost:3000";
+const baseURL = "http://localhost:5000";
 
 const BookingsManagement = () => {
   const [bookings, setBookings] = useState([]);
@@ -12,7 +12,7 @@ const BookingsManagement = () => {
 
   // Get token from localStorage
   const getToken = () => {
-    return localStorage.getItem('token');
+    return localStorage.getItem("token");
   };
 
   // Fetch bookings from API
@@ -22,8 +22,8 @@ const BookingsManagement = () => {
       try {
         const response = await fetch(`${baseURL}/api/v1/orders`, {
           headers: {
-            'Authorization': `Bearer ${getToken()}`
-          }
+            Authorization: `Bearer ${getToken()}`,
+          },
         });
 
         if (!response.ok) {
@@ -31,7 +31,7 @@ const BookingsManagement = () => {
         }
 
         const data = await response.json();
-        
+
         if (data.message === "No orders for now") {
           setBookings([]);
         } else {
@@ -53,24 +53,27 @@ const BookingsManagement = () => {
   // Function to handle key return
   const handleKeyReturn = async (bookingId) => {
     try {
-      const response = await fetch(`${baseURL}/api/v1/orders/return/${bookingId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getToken()}`
-        },
-        body: JSON.stringify({ status: 'pending' })
-      });
+      const response = await fetch(
+        `${baseURL}/api/v1/orders/return/${bookingId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`,
+          },
+          body: JSON.stringify({ status: "pending" }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
       // Update the local state to reflect the changes
-      setBookings(prevBookings =>
-        prevBookings.map(booking =>
+      setBookings((prevBookings) =>
+        prevBookings.map((booking) =>
           booking._id === bookingId
-            ? { ...booking, status: 'pending' }
+            ? { ...booking, status: "pending" }
             : booking
         )
       );
@@ -89,18 +92,18 @@ const BookingsManagement = () => {
 
     try {
       const response = await fetch(`${baseURL}/api/v1/orders/${bookingId}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${getToken()}`
-        }
+          Authorization: `Bearer ${getToken()}`,
+        },
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      setBookings(prevBookings =>
-        prevBookings.filter(booking => booking._id !== bookingId)
+      setBookings((prevBookings) =>
+        prevBookings.filter((booking) => booking._id !== bookingId)
       );
       setError(null);
     } catch (error) {
@@ -112,10 +115,18 @@ const BookingsManagement = () => {
   // Filter bookings based on search term and status filter
   const filteredBookings = bookings.filter((booking) => {
     const matchesSearch =
-      (booking.venueId?.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (booking.student?.registrationNumber || "").toString().includes(searchTerm.toLowerCase()) ||
-      (booking.student?.yearOfStudy || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (booking.employee?.email || "").toLowerCase().includes(searchTerm.toLowerCase());
+      (booking.venueId?.name || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      (booking.student?.registrationNumber || "")
+        .toString()
+        .includes(searchTerm.toLowerCase()) ||
+      (booking.student?.yearOfStudy || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      (booking.employee?.email || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
 
     const matchesFilter =
       statusFilter === "all" || booking.status === statusFilter;
@@ -125,12 +136,12 @@ const BookingsManagement = () => {
 
   // Function to format date
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -278,7 +289,8 @@ const BookingsManagement = () => {
                                   : "bg-yellow-100 text-yellow-600"
                               }`}
                             >
-                              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                              {booking.status.charAt(0).toUpperCase() +
+                                booking.status.slice(1)}
                             </span>
 
                             <div className="flex items-center space-x-2 ml-2">

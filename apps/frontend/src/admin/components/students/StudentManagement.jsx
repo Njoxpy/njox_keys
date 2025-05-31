@@ -34,7 +34,7 @@ const StudentsManagement = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:3000/api/v1/students?page=${currentPage}&limit=${studentsPerPage}&sort=${sortField}&order=${sortOrder}`,
+        `http://localhost:5000/api/v1/students?page=${currentPage}&limit=${studentsPerPage}&sort=${sortField}&order=${sortOrder}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -98,7 +98,9 @@ const StudentsManagement = () => {
 
     // Check year of study format (YYYY/YYYY)
     if (!/^\d{4}\/\d{4}$/.test(formData.yearOfStudy)) {
-      setError("Year of study must be in the format 'YYYY/YYYY' (e.g., 2024/2025)");
+      setError(
+        "Year of study must be in the format 'YYYY/YYYY' (e.g., 2024/2025)"
+      );
       return false;
     }
 
@@ -109,15 +111,15 @@ const StudentsManagement = () => {
     const { name, value } = e.target;
     if (name === "registrationNumber") {
       // Only allow numbers and limit to 14 digits
-      const numericValue = value.replace(/\D/g, '').slice(0, 14);
+      const numericValue = value.replace(/\D/g, "").slice(0, 14);
       setFormData({
         ...formData,
-        [name]: numericValue
+        [name]: numericValue,
       });
     } else {
       setFormData({
         ...formData,
-        [name]: value
+        [name]: value,
       });
     }
   };
@@ -136,7 +138,7 @@ const StudentsManagement = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:3000/api/v1/students", {
+      const response = await fetch("http://localhost:5000/api/v1/students", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -144,7 +146,7 @@ const StudentsManagement = () => {
         },
         body: JSON.stringify({
           ...formData,
-          registrationNumber: Number(formData.registrationNumber)
+          registrationNumber: Number(formData.registrationNumber),
         }),
       });
 
@@ -165,7 +167,7 @@ const StudentsManagement = () => {
 
   const validateEditForm = (originalStudent, newData) => {
     const errors = {};
-    
+
     // Only validate fields that have been modified
     if (newData.registrationNumber !== originalStudent.registrationNumber) {
       // Check if registration number is a valid number
@@ -175,14 +177,16 @@ const StudentsManagement = () => {
       }
       // Check if registration number is exactly 14 digits
       else if (!/^\d{14}$/.test(regNumber.toString())) {
-        errors.registrationNumber = "Registration number must be exactly 14 digits";
+        errors.registrationNumber =
+          "Registration number must be exactly 14 digits";
       }
     }
 
     if (newData.yearOfStudy !== originalStudent.yearOfStudy) {
       // Check year of study format (YYYY/YYYY)
       if (!/^\d{4}\/\d{4}$/.test(newData.yearOfStudy)) {
-        errors.yearOfStudy = "Year of study must be in the format 'YYYY/YYYY' (e.g., 2024/2025)";
+        errors.yearOfStudy =
+          "Year of study must be in the format 'YYYY/YYYY' (e.g., 2024/2025)";
       }
     }
 
@@ -204,7 +208,7 @@ const StudentsManagement = () => {
 
     // Get only the changed fields
     const changedFields = {};
-    Object.keys(formData).forEach(key => {
+    Object.keys(formData).forEach((key) => {
       if (formData[key] !== currentStudent[key]?.toString()) {
         changedFields[key] = formData[key];
       }
@@ -227,7 +231,7 @@ const StudentsManagement = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:3000/api/v1/students/${currentStudent._id}`,
+        `http://localhost:5000/api/v1/students/${currentStudent._id}`,
         {
           method: "PATCH",
           headers: {
@@ -236,8 +240,9 @@ const StudentsManagement = () => {
           },
           body: JSON.stringify({
             ...changedFields,
-            registrationNumber: changedFields.registrationNumber ? 
-              Number(changedFields.registrationNumber) : undefined
+            registrationNumber: changedFields.registrationNumber
+              ? Number(changedFields.registrationNumber)
+              : undefined,
           }),
         }
       );
@@ -261,7 +266,7 @@ const StudentsManagement = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:3000/api/v1/students/${currentStudent._id}`,
+        `http://localhost:5000/api/v1/students/${currentStudent._id}`,
         {
           method: "DELETE",
           headers: {
@@ -304,13 +309,15 @@ const StudentsManagement = () => {
 
   // Sorting logic
   const sortedStudents = [...filteredStudents].sort((a, b) => {
-    const aValue = sortField === "registrationNumber" 
-      ? a[sortField] 
-      : a[sortField]?.toString().toLowerCase();
-    const bValue = sortField === "registrationNumber"
-      ? b[sortField]
-      : b[sortField]?.toString().toLowerCase();
-    
+    const aValue =
+      sortField === "registrationNumber"
+        ? a[sortField]
+        : a[sortField]?.toString().toLowerCase();
+    const bValue =
+      sortField === "registrationNumber"
+        ? b[sortField]
+        : b[sortField]?.toString().toLowerCase();
+
     if (sortOrder === "asc") {
       return aValue > bValue ? 1 : -1;
     } else {
@@ -467,7 +474,9 @@ const StudentsManagement = () => {
                 <h2 className="text-xl font-semibold text-slate-800 mb-4">
                   {showAddModal ? "Add New Student" : "Edit Student"}
                 </h2>
-                <form onSubmit={showAddModal ? handleAddStudent : handleEditStudent}>
+                <form
+                  onSubmit={showAddModal ? handleAddStudent : handleEditStudent}
+                >
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -507,7 +516,9 @@ const StudentsManagement = () => {
                     <button
                       type="button"
                       onClick={() => {
-                        showAddModal ? setShowAddModal(false) : setShowEditModal(false);
+                        showAddModal
+                          ? setShowAddModal(false)
+                          : setShowEditModal(false);
                         resetForm();
                       }}
                       className="px-4 py-2 bg-white text-slate-800 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
@@ -532,7 +543,9 @@ const StudentsManagement = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg w-full max-w-md p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-slate-800">Edit Student</h2>
+                <h2 className="text-xl font-semibold text-slate-800">
+                  Edit Student
+                </h2>
                 <button
                   onClick={() => {
                     setShowEditModal(false);
@@ -564,7 +577,9 @@ const StudentsManagement = () => {
                       className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                       placeholder={currentStudent?.registrationNumber}
                     />
-                    <p className="mt-1 text-sm text-slate-500">Must be exactly 14 digits</p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Must be exactly 14 digits
+                    </p>
                   </div>
 
                   <div>
@@ -579,7 +594,9 @@ const StudentsManagement = () => {
                       className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                       placeholder={currentStudent?.yearOfStudy}
                     />
-                    <p className="mt-1 text-sm text-slate-500">Format: YYYY/YYYY (e.g., 2024/2025)</p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Format: YYYY/YYYY (e.g., 2024/2025)
+                    </p>
                   </div>
                 </div>
 
@@ -615,7 +632,8 @@ const StudentsManagement = () => {
                   Delete Student
                 </h2>
                 <p className="text-slate-600">
-                  Are you sure you want to delete this student? This action cannot be undone.
+                  Are you sure you want to delete this student? This action
+                  cannot be undone.
                 </p>
                 <div className="mt-6 flex justify-end space-x-2">
                   <button

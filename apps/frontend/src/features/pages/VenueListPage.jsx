@@ -5,6 +5,7 @@ import { mockVenues } from "../venues/data/mockVenues";
 import VenueCard from "../venues/VenueCard";
 import SearchAndFilterBar from "../venues/SearchAndFilterBar";
 import Pagination from "../venues/Pagination";
+import Footer from "../../components/footer";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -22,9 +23,7 @@ const VenueListPage = () => {
   }, []);
 
   const filteredVenues = venues
-    .filter((venue) =>
-      venue.name.toLowerCase().includes(search.toLowerCase())
-    )
+    .filter((venue) => venue.name.toLowerCase().includes(search.toLowerCase()))
     .filter((venue) => (blockFilter ? venue.block === blockFilter : true))
     .filter((venue) => venue.capacity >= capacityFilter)
     .sort((a, b) =>
@@ -39,7 +38,7 @@ const VenueListPage = () => {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const blocks = [...new Set(venues.map(v => v.block))];
+  const blocks = [...new Set(venues.map((v) => v.block))];
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -48,35 +47,36 @@ const VenueListPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <h1 className="text-2xl font-bold text-slate-800 mb-4">
-        Venue List
-      </h1>
+    <>
+      <div className="min-h-screen bg-slate-50 p-6">
+        <h1 className="text-2xl font-bold text-slate-800 mb-4">Venue List</h1>
 
-      <SearchAndFilterBar
-        search={search}
-        setSearch={setSearch}
-        blockFilter={blockFilter}
-        setBlockFilter={setBlockFilter}
-        capacityFilter={capacityFilter}
-        setCapacityFilter={setCapacityFilter}
-        sortOrder={sortOrder}
-        setSortOrder={setSortOrder}
-        blocks={blocks}
-      />
+        <SearchAndFilterBar
+          search={search}
+          setSearch={setSearch}
+          blockFilter={blockFilter}
+          setBlockFilter={setBlockFilter}
+          capacityFilter={capacityFilter}
+          setCapacityFilter={setCapacityFilter}
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
+          blocks={blocks}
+        />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {paginatedVenues.map((venue, idx) => (
-          <VenueCard key={idx} venue={venue} />
-        ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {paginatedVenues.map((venue, idx) => (
+            <VenueCard key={idx} venue={venue} />
+          ))}
+        </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       </div>
-
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
-    </div>
+      <Footer />
+    </>
   );
 };
 

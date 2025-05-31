@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, X } from 'react-feather';
+import { Plus, Search, X } from "react-feather";
 
-const baseURL = "http://localhost:3000";
+const baseURL = "http://localhost:5000";
 
 const UsersManagement = () => {
   // State management
@@ -59,14 +59,16 @@ const UsersManagement = () => {
 
   // Filter and search users
   const filteredUsers = users.filter((user) => {
-    const matchesSearch = !searchTerm || (
-      (user.firstname?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (user.lastname?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (user.registrationNumber?.toString() || '').includes(searchTerm)
-    );
+    const matchesSearch =
+      !searchTerm ||
+      (user.firstname?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      ) ||
+      (user.lastname?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (user.email?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (user.registrationNumber?.toString() || "").includes(searchTerm);
 
-    const matchesRole = filterRole === 'all' || user.role === filterRole;
+    const matchesRole = filterRole === "all" || user.role === filterRole;
 
     return matchesSearch && matchesRole;
   });
@@ -131,12 +133,20 @@ const UsersManagement = () => {
     const errors = {};
 
     // Firstname validation
-    if (!formData.firstname || formData.firstname.length < 2 || formData.firstname.length > 35) {
+    if (
+      !formData.firstname ||
+      formData.firstname.length < 2 ||
+      formData.firstname.length > 35
+    ) {
       errors.firstname = "First name should be between 2 and 35 characters";
     }
 
     // Lastname validation
-    if (!formData.lastname || formData.lastname.length < 2 || formData.lastname.length > 35) {
+    if (
+      !formData.lastname ||
+      formData.lastname.length < 2 ||
+      formData.lastname.length > 35
+    ) {
       errors.lastname = "Last name should be between 2 and 35 characters";
     }
 
@@ -149,12 +159,14 @@ const UsersManagement = () => {
     // Registration number validation
     const regNumberStr = formData.registrationNumber.toString();
     if (!formData.registrationNumber || !/^\d{10}$/.test(regNumberStr)) {
-      errors.registrationNumber = "Registration number must be exactly 10 digits";
+      errors.registrationNumber =
+        "Registration number must be exactly 10 digits";
     }
 
     // Password validation
     if (!formData.password || !isStrongPassword(formData.password)) {
-      errors.password = "Password must be at least 8 characters long, with at least one lowercase letter, one uppercase letter, one number, and one special character.";
+      errors.password =
+        "Password must be at least 8 characters long, with at least one lowercase letter, one uppercase letter, one number, and one special character.";
     }
 
     // Role validation
@@ -166,11 +178,13 @@ const UsersManagement = () => {
   };
 
   const isStrongPassword = (password) => {
-    return password.length >= 8 &&
+    return (
+      password.length >= 8 &&
       /[a-z]/.test(password) &&
       /[A-Z]/.test(password) &&
       /[0-9]/.test(password) &&
-      /[!@#$%^&*(),.?":{}|<>]/.test(password);
+      /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    );
   };
 
   // Add user handler
@@ -197,7 +211,7 @@ const UsersManagement = () => {
         },
         body: JSON.stringify({
           ...formData,
-          registrationNumber: parseInt(formData.registrationNumber, 10)
+          registrationNumber: parseInt(formData.registrationNumber, 10),
         }),
       });
 
@@ -233,7 +247,7 @@ const UsersManagement = () => {
   // Validate edit form - only validate fields that have been changed
   const validateEditForm = (originalUser, newData) => {
     const errors = {};
-    
+
     // Only validate fields that have been modified
     if (newData.firstname !== originalUser.firstname) {
       if (newData.firstname.length < 2 || newData.firstname.length > 35) {
@@ -257,13 +271,15 @@ const UsersManagement = () => {
     if (newData.registrationNumber !== originalUser.registrationNumber) {
       const regNumberStr = newData.registrationNumber.toString();
       if (!/^\d{10}$/.test(regNumberStr)) {
-        errors.registrationNumber = "Registration number must be exactly 10 digits";
+        errors.registrationNumber =
+          "Registration number must be exactly 10 digits";
       }
     }
 
     if (newData.password) {
       if (!isStrongPassword(newData.password)) {
-        errors.password = "Password must be at least 8 characters long, with at least one lowercase letter, one uppercase letter, one number, and one special character.";
+        errors.password =
+          "Password must be at least 8 characters long, with at least one lowercase letter, one uppercase letter, one number, and one special character.";
       }
     }
 
@@ -284,10 +300,11 @@ const UsersManagement = () => {
 
     // Get only the changed fields
     const changedFields = {};
-    Object.keys(formData).forEach(key => {
+    Object.keys(formData).forEach((key) => {
       // Include field if it's different from current user data or if it's a password
-      if (key === 'password') {
-        if (formData[key]) { // Only include password if it was entered
+      if (key === "password") {
+        if (formData[key]) {
+          // Only include password if it was entered
           changedFields[key] = formData[key];
         }
       } else if (formData[key] !== currentUser[key]) {
@@ -312,18 +329,22 @@ const UsersManagement = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${baseURL}/api/v1/users/${currentUser._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...changedFields,
-          registrationNumber: changedFields.registrationNumber ? 
-            parseInt(changedFields.registrationNumber, 10) : undefined
-        }),
-      });
+      const response = await fetch(
+        `${baseURL}/api/v1/users/${currentUser._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            ...changedFields,
+            registrationNumber: changedFields.registrationNumber
+              ? parseInt(changedFields.registrationNumber, 10)
+              : undefined,
+          }),
+        }
+      );
 
       const data = await response.json();
       if (!response.ok) {
@@ -345,7 +366,9 @@ const UsersManagement = () => {
       {/* Page Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-slate-800">User Management</h1>
+          <h1 className="text-2xl font-semibold text-slate-800">
+            User Management
+          </h1>
           <button
             onClick={() => {
               setShowAddModal(true);
@@ -374,7 +397,10 @@ const UsersManagement = () => {
                   focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent
                   hover:border-slate-300 transition-colors"
               />
-              <Search size={20} className="absolute left-3 top-2.5 text-slate-400" />
+              <Search
+                size={20}
+                className="absolute left-3 top-2.5 text-slate-400"
+              />
             </div>
           </div>
           <div className="w-full sm:w-48">
@@ -452,51 +478,58 @@ const UsersManagement = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-200">
-                  {filteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((user) => (
-                    <tr key={user._id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-slate-900">
-                          {user.firstname} {user.lastname}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-slate-500">{user.email}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-slate-500">
-                          {user.registrationNumber}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            user.role === "admin"
-                              ? "bg-purple-100 text-purple-800"
-                              : "bg-green-100 text-green-800"
-                          }`}
-                        >
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => handleEditClick(user)}
-                          className="text-blue-600 hover:text-blue-900 mr-4"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => {
-                            setCurrentUser(user);
-                            setShowDeleteModal(true);
-                          }}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredUsers
+                    .slice(
+                      (currentPage - 1) * itemsPerPage,
+                      currentPage * itemsPerPage
+                    )
+                    .map((user) => (
+                      <tr key={user._id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-slate-900">
+                            {user.firstname} {user.lastname}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-slate-500">
+                            {user.email}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-slate-500">
+                            {user.registrationNumber}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              user.role === "admin"
+                                ? "bg-purple-100 text-purple-800"
+                                : "bg-green-100 text-green-800"
+                            }`}
+                          >
+                            {user.role}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <button
+                            onClick={() => handleEditClick(user)}
+                            className="text-blue-600 hover:text-blue-900 mr-4"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => {
+                              setCurrentUser(user);
+                              setShowDeleteModal(true);
+                            }}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
@@ -522,28 +555,33 @@ const UsersManagement = () => {
               <span className="ml-2">entries</span>
             </div>
             <div className="flex gap-2">
-              {Array.from({ length: Math.ceil(filteredUsers.length / itemsPerPage) }, (_, i) => (
-                <button
-                  key={i + 1}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`px-3 py-1 rounded ${
-                    currentPage === i + 1
-                      ? "bg-blue-600 text-white"
-                      : "bg-white text-blue-600 border border-blue-600"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
+              {Array.from(
+                { length: Math.ceil(filteredUsers.length / itemsPerPage) },
+                (_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`px-3 py-1 rounded ${
+                      currentPage === i + 1
+                        ? "bg-blue-600 text-white"
+                        : "bg-white text-blue-600 border border-blue-600"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                )
+              )}
             </div>
           </div>
         </>
       ) : (
         <div className="bg-white rounded-lg shadow-sm p-8 text-center">
           <div className="max-w-md mx-auto">
-            <h3 className="text-lg font-semibold text-slate-800 mb-2">No Users Found</h3>
+            <h3 className="text-lg font-semibold text-slate-800 mb-2">
+              No Users Found
+            </h3>
             <p className="text-slate-600 mb-6">
-              {searchTerm 
+              {searchTerm
                 ? "No users match your search criteria. Try adjusting your search terms."
                 : "There are no users registered at the moment. Click the 'Add New User' button to add one."}
             </p>
@@ -566,7 +604,9 @@ const UsersManagement = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg w-full max-w-md p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-slate-800">Add New User</h2>
+              <h2 className="text-xl font-semibold text-slate-800">
+                Add New User
+              </h2>
               <button
                 onClick={() => {
                   setShowAddModal(false);
@@ -661,7 +701,8 @@ const UsersManagement = () => {
                     required
                   />
                   <p className="mt-1 text-sm text-slate-500">
-                    Must be at least 8 characters with 1 uppercase, 1 lowercase, 1 number, and 1 special character
+                    Must be at least 8 characters with 1 uppercase, 1 lowercase,
+                    1 number, and 1 special character
                   </p>
                 </div>
 
@@ -795,7 +836,9 @@ const UsersManagement = () => {
                       hover:border-slate-400 transition-colors"
                     placeholder={currentUser?.registrationNumber}
                   />
-                  <p className="mt-1 text-sm text-slate-500">Must be exactly 10 digits</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Must be exactly 10 digits
+                  </p>
                 </div>
 
                 <div>
@@ -813,7 +856,9 @@ const UsersManagement = () => {
                     placeholder="Leave empty to keep current password"
                   />
                   <p className="mt-1 text-sm text-slate-500">
-                    Leave empty to keep current password, or enter a new password with at least 8 characters, 1 uppercase, 1 lowercase, 1 number, and 1 special character
+                    Leave empty to keep current password, or enter a new
+                    password with at least 8 characters, 1 uppercase, 1
+                    lowercase, 1 number, and 1 special character
                   </p>
                 </div>
 
@@ -922,25 +967,28 @@ const UsersManagement = () => {
                         }
                       );
 
-                      response.then((res) => {
-                        if (!res.ok) {
-                          throw new Error(res.statusText);
-                        }
-                        return res.json();
-                      })
-                      .then(() => {
-                        setUsers((prevUsers) =>
-                          prevUsers.filter((user) => user._id !== currentUser._id)
-                        );
-                        setShowDeleteModal(false);
-                        setError(null);
-                      })
-                      .catch((err) => {
-                        setError(err.message);
-                      })
-                      .finally(() => {
-                        setIsSubmitting(false);
-                      });
+                      response
+                        .then((res) => {
+                          if (!res.ok) {
+                            throw new Error(res.statusText);
+                          }
+                          return res.json();
+                        })
+                        .then(() => {
+                          setUsers((prevUsers) =>
+                            prevUsers.filter(
+                              (user) => user._id !== currentUser._id
+                            )
+                          );
+                          setShowDeleteModal(false);
+                          setError(null);
+                        })
+                        .catch((err) => {
+                          setError(err.message);
+                        })
+                        .finally(() => {
+                          setIsSubmitting(false);
+                        });
                     } catch (err) {
                       setError(err.message);
                     }

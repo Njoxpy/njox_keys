@@ -64,82 +64,82 @@ const DashboardOverview = () => {
     const fetchStats = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) {
-          throw new Error('Authentication required. Please log in.');
+          throw new Error("Authentication required. Please log in.");
         }
 
         const headers = {
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         };
 
         // Helper function to handle API response
         const handleResponse = async (response, endpoint) => {
           if (!response.ok) {
             if (response.status === 401) {
-              throw new Error('Session expired. Please log in again.');
+              throw new Error("Session expired. Please log in again.");
             }
             throw new Error(`Failed to fetch ${endpoint} data`);
           }
           const data = await response.json();
-          
+
           // Validate response format based on endpoint
-          switch(endpoint) {
-            case 'venues':
-              if (typeof data?.venueCount !== 'number') {
-                throw new Error('Invalid venues data format');
+          switch (endpoint) {
+            case "venues":
+              if (typeof data?.venueCount !== "number") {
+                throw new Error("Invalid venues data format");
               }
               break;
-            case 'students':
-              if (typeof data?.studentsCount !== 'number') {
-                throw new Error('Invalid students data format');
+            case "students":
+              if (typeof data?.studentsCount !== "number") {
+                throw new Error("Invalid students data format");
               }
               break;
-            case 'users':
-              if (typeof data?.usersCount !== 'number') {
-                throw new Error('Invalid users data format');
+            case "users":
+              if (typeof data?.usersCount !== "number") {
+                throw new Error("Invalid users data format");
               }
               break;
-            case 'available venues':
-              if (typeof data?.venueCountAvailable !== 'number') {
-                throw new Error('Invalid available venues data format');
+            case "available venues":
+              if (typeof data?.venueCountAvailable !== "number") {
+                throw new Error("Invalid available venues data format");
               }
               break;
-            case 'orders':
-              if (typeof data?.ordersCount !== 'number') {
-                throw new Error('Invalid orders data format');
+            case "orders":
+              if (typeof data?.ordersCount !== "number") {
+                throw new Error("Invalid orders data format");
               }
               break;
           }
-          
+
           return data;
         };
 
         // Fetch data from all endpoints
         const venuesPromise = fetch(
-          "http://localhost:3000/api/v1/stats/total-venues",
+          "http://localhost:5000/api/v1/stats/total-venues",
           { headers }
-        ).then(res => handleResponse(res, 'venues'));
+        ).then((res) => handleResponse(res, "venues"));
 
         const studentsPromise = fetch(
-          "http://localhost:3000/api/v1/stats/total-students",
+          "http://localhost:5000/api/v1/stats/total-students",
           { headers }
-        ).then(res => handleResponse(res, 'students'));
+        ).then((res) => handleResponse(res, "students"));
 
         const usersPromise = fetch(
-          "http://localhost:3000/api/v1/stats/total-users",
+          "http://localhost:5000/api/v1/stats/total-users",
           { headers }
-        ).then(res => handleResponse(res, 'users'));
+        ).then((res) => handleResponse(res, "users"));
 
         const availableVenuesPromise = fetch(
-          "http://localhost:3000/api/v1/stats/total-available",
+          "http://localhost:5000/api/v1/stats/total-available",
           { headers }
-        ).then(res => handleResponse(res, 'available venues'));
+        ).then((res) => handleResponse(res, "available venues"));
 
         const ordersPromise = fetch(
-          "http://localhost:3000/api/v1/stats/total-orders",
+          "http://localhost:5000/api/v1/stats/total-orders",
           { headers }
-        ).then(res => handleResponse(res, 'orders'));
+        ).then((res) => handleResponse(res, "orders"));
 
         // Resolve all promises
         const [
@@ -195,8 +195,8 @@ const DashboardOverview = () => {
           availableVenues: 0,
           totalOrders: 0,
         });
-        setMetrics(prevMetrics => 
-          prevMetrics.map(metric => ({ ...metric, value: 0 }))
+        setMetrics((prevMetrics) =>
+          prevMetrics.map((metric) => ({ ...metric, value: 0 }))
         );
       } finally {
         setLoading(false);

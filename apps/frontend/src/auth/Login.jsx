@@ -1,29 +1,46 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { User, Lock, LogIn } from "lucide-react";
-import API from "../utils/api"; // Import API instance
-import { useNavigate } from "react-router-dom"; // For redirection
+import API from "../utils/api"; // Your Axios instance
+import { useNavigate } from "react-router-dom";
+import useAuthStore from "../store/useAuthStore"; // Zustand store
 
 const LoginPage = () => {
+  const { token, login } = useAuthStore(); // Zustand auth state and actions
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // Initialize navigation
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (token) {
+      navigate("/venues");
+    }
+  }, [token, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(""); // Clear previous errors
+    setError("");
 
     try {
-      const response = await API.post("/users/login", { email, password });
+      const response = await API.post("/v1/users/login", {
+        email,
+        password,
+      });
+      // assuming your API instance already has baseURL set from env
 
-      // Store token and email in localStorage
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("userEmail", email);
-      console.log("Login successful:", response.data);
+      const { token: authToken, userEmail, role } = response.data;
 
-      // Redirect to dashboard or home
+      // Save to localStorage
+      localStorage.setItem("token", authToken);
+      localStorage.setItem("userEmail", userEmail);
+
+      // Sync Zustand store (login method expects user info + token)
+      login({ email: userEmail, role }, authToken);
+
       navigate("/venues");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed. Try again.");

@@ -17,7 +17,7 @@ import {
 import Venue from "../../assets/venue.jpg";
 import { Book } from "react-feather";
 
-const baseURL = "http://localhost:3000"; // Base URL for fetching images
+const baseURL = "http://localhost:5000"; // Base URL for fetching images
 
 const VenuesManagement = () => {
   const [venues, setVenues] = useState([]);
@@ -56,15 +56,15 @@ const VenuesManagement = () => {
 
   // Get token from localStorage
   const getToken = () => {
-    return localStorage.getItem('token');
+    return localStorage.getItem("token");
   };
 
   // Prepare headers with authentication token
   const getAuthHeaders = () => {
     const token = getToken();
     return {
-      'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : ''
+      "Content-Type": "application/json",
+      Authorization: token ? `Bearer ${token}` : "",
     };
   };
 
@@ -74,22 +74,22 @@ const VenuesManagement = () => {
       setLoading(true);
       try {
         const response = await fetch(`${baseURL}/api/v1/venues`, {
-          headers: getAuthHeaders()
+          headers: getAuthHeaders(),
         });
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        
+
         const data = await response.json();
-        
+
         // Handle "no venues" response
         if (data.message === "There no venues for now") {
           setVenues([]);
           setError(null);
           return;
         }
-        
+
         // Extract venues array from response data
         let venuesData = [];
         if (Array.isArray(data)) {
@@ -108,11 +108,12 @@ const VenuesManagement = () => {
         }
 
         // Validate venue objects before setting state
-        const validVenues = venuesData.filter(venue => 
-          venue && 
-          typeof venue === 'object' && 
-          venue.name && 
-          typeof venue.name === 'string'
+        const validVenues = venuesData.filter(
+          (venue) =>
+            venue &&
+            typeof venue === "object" &&
+            venue.name &&
+            typeof venue.name === "string"
         );
 
         setVenues(validVenues);
@@ -136,9 +137,13 @@ const VenuesManagement = () => {
   };
 
   // Filter venues based on search query
-  const filteredVenues = venues.length ? venues.filter((venue) =>
-    venue && venue.name ? venue.name.toLowerCase().includes(searchQuery.toLowerCase()) : false
-  ) : [];
+  const filteredVenues = venues.length
+    ? venues.filter((venue) =>
+        venue && venue.name
+          ? venue.name.toLowerCase().includes(searchQuery.toLowerCase())
+          : false
+      )
+    : [];
 
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -170,7 +175,7 @@ const VenuesManagement = () => {
     try {
       // Fetch the latest venue data
       const response = await fetch(`${baseURL}/api/v1/venues/${venue._id}`, {
-        headers: getAuthHeaders()
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -187,7 +192,9 @@ const VenuesManagement = () => {
         capacity: venueData.capacity || "",
         venueNumber: venueData.venueNumber || "",
         description: venueData.description || "",
-        equipment: Array.isArray(venueData.equipment) ? venueData.equipment.join(", ") : "",
+        equipment: Array.isArray(venueData.equipment)
+          ? venueData.equipment.join(", ")
+          : "",
         name: venueData.name || "",
         status: venueData.status || "available",
       });
@@ -208,15 +215,18 @@ const VenuesManagement = () => {
   // Handle deleting a venue
   const handleDeleteVenue = async () => {
     try {
-      const response = await fetch(`${baseURL}/api/v1/venues/${venueToDelete._id}`, {
-        method: "DELETE",
-        headers: getAuthHeaders()
-      });
-      
+      const response = await fetch(
+        `${baseURL}/api/v1/venues/${venueToDelete._id}`,
+        {
+          method: "DELETE",
+          headers: getAuthHeaders(),
+        }
+      );
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      
+
       setVenues(venues.filter((venue) => venue._id !== venueToDelete._id));
       setIsDeleteModalOpen(false);
       setVenueToDelete(null);
@@ -229,9 +239,9 @@ const VenuesManagement = () => {
   // Handle input changes in the form
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'equipment') {
+    if (name === "equipment") {
       // Convert both bullet points and commas to consistent separator
-      const cleanedValue = value.replace(/[•,]/g, ',');
+      const cleanedValue = value.replace(/[•,]/g, ",");
       setFormData({
         ...formData,
         [name]: cleanedValue,
@@ -263,12 +273,14 @@ const VenuesManagement = () => {
       name: formData.name,
       abbreviation: formData.abbreviation,
       block: formData.block,
-      description: formData.description
+      description: formData.description,
     };
 
     for (const [key, value] of Object.entries(requiredFields)) {
       if (!value || value.trim() === "") {
-        setError(`${key.charAt(0).toUpperCase() + key.slice(1)} cannot be empty!`);
+        setError(
+          `${key.charAt(0).toUpperCase() + key.slice(1)} cannot be empty!`
+        );
         return;
       }
     }
@@ -300,8 +312,8 @@ const VenuesManagement = () => {
     // Handle equipment array
     const equipmentArray = formData.equipment
       .split(",")
-      .map(item => item.trim())
-      .filter(item => item !== "");
+      .map((item) => item.trim())
+      .filter((item) => item !== "");
     formDataToSend.append("equipment", JSON.stringify(equipmentArray));
 
     // Append image files only if new files are selected
@@ -319,22 +331,24 @@ const VenuesManagement = () => {
           {
             method: "PATCH",
             headers: {
-              'Authorization': getToken() ? `Bearer ${getToken()}` : ''
+              Authorization: getToken() ? `Bearer ${getToken()}` : "",
             },
             body: formDataToSend,
           }
         );
-        
+
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+          throw new Error(
+            errorData.message || `HTTP error! Status: ${response.status}`
+          );
         }
-        
+
         const updatedVenue = await response.json();
         const venueData = updatedVenue.data || updatedVenue;
-        
-        setVenues(prevVenues =>
-          prevVenues.map(venue =>
+
+        setVenues((prevVenues) =>
+          prevVenues.map((venue) =>
             venue._id === currentVenue._id ? venueData : venue
           )
         );
@@ -343,24 +357,26 @@ const VenuesManagement = () => {
         const response = await fetch(`${baseURL}/api/v1/venues`, {
           method: "POST",
           headers: {
-            'Authorization': getToken() ? `Bearer ${getToken()}` : ''
+            Authorization: getToken() ? `Bearer ${getToken()}` : "",
           },
           body: formDataToSend,
         });
-        
+
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+          throw new Error(
+            errorData.message || `HTTP error! Status: ${response.status}`
+          );
         }
-        
+
         const addedVenue = await response.json();
         const newVenue = addedVenue.newVenue || addedVenue.data || addedVenue;
-        
-        if (!newVenue || typeof newVenue !== 'object' || !newVenue.name) {
-          throw new Error('Invalid venue data received from server');
+
+        if (!newVenue || typeof newVenue !== "object" || !newVenue.name) {
+          throw new Error("Invalid venue data received from server");
         }
-        
-        setVenues(prevVenues => [...prevVenues, newVenue]);
+
+        setVenues((prevVenues) => [...prevVenues, newVenue]);
       }
       setIsModalOpen(false);
       setSelectedFiles([]);
@@ -404,8 +420,8 @@ const VenuesManagement = () => {
         {
           method: "PUT",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': getToken() ? `Bearer ${getToken()}` : ''
+            "Content-Type": "application/json",
+            Authorization: getToken() ? `Bearer ${getToken()}` : "",
           },
           body: JSON.stringify({ status: newStatus }),
         }
@@ -413,15 +429,17 @@ const VenuesManagement = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+        throw new Error(
+          errorData.message || `HTTP error! Status: ${response.status}`
+        );
       }
 
       const data = await response.json();
       const updatedVenue = data.updatedVenueStatus;
 
       // Update venues list with new status
-      setVenues(prevVenues =>
-        prevVenues.map(venue =>
+      setVenues((prevVenues) =>
+        prevVenues.map((venue) =>
           venue._id === venueToUpdateStatus._id ? updatedVenue : venue
         )
       );
@@ -432,7 +450,9 @@ const VenuesManagement = () => {
       setError(null);
     } catch (error) {
       console.error("Error updating venue status:", error);
-      setError(error.message || "Failed to update venue status. Please try again.");
+      setError(
+        error.message || "Failed to update venue status. Please try again."
+      );
     }
   };
 
@@ -494,9 +514,11 @@ const VenuesManagement = () => {
                 >
                   <div className="relative h-48">
                     <img
-                      src={venue.images && venue.images.length > 0 
-                        ? `${baseURL}/${venue.images[0]}` 
-                        : Venue}
+                      src={
+                        venue.images && venue.images.length > 0
+                          ? `${baseURL}/${venue.images[0]}`
+                          : Venue
+                      }
                       alt={venue.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -522,38 +544,42 @@ const VenuesManagement = () => {
 
                     <div className="flex items-center text-slate-600 mb-2">
                       <MapPin size={16} className="mr-1" />
-                      <span className="text-sm">{venue.block || 'N/A'}</span>
+                      <span className="text-sm">{venue.block || "N/A"}</span>
                     </div>
-
 
                     <div className="flex items-center text-slate-600 mb-2">
                       <Users size={16} className="mr-1" />
-                      <span className="text-sm">Capacity: {venue.capacity || 'N/A'}</span>
+                      <span className="text-sm">
+                        Capacity: {venue.capacity || "N/A"}
+                      </span>
                     </div>
 
                     <div className="flex items-center text-slate-600 mb-2">
                       <Clock size={16} className="mr-1" />
                       <span className="text-sm">
-                        Venue Number: {venue.venueNumber || 'N/A'}
+                        Venue Number: {venue.venueNumber || "N/A"}
                       </span>
                     </div>
 
-                    
                     <div className="flex items-center text-slate-600 mb-2">
                       <Book size={16} className="mr-1" />
-                      <span className="text-sm">Description: {venue.description || 'N/A'}</span>
+                      <span className="text-sm">
+                        Description: {venue.description || "N/A"}
+                      </span>
                     </div>
 
                     <div className="mt-3">
                       <p className="text-xs text-slate-500 mb-1">Equipment:</p>
                       <p className="text-sm text-slate-700">
-                        {Array.isArray(venue.equipment) && venue.equipment.length > 0 ? (
-                          venue.equipment
-                            .map(item => item.charAt(0).toUpperCase() + item.slice(1))
-                            .join(' • ')
-                        ) : (
-                          'No equipment listed'
-                        )}
+                        {Array.isArray(venue.equipment) &&
+                        venue.equipment.length > 0
+                          ? venue.equipment
+                              .map(
+                                (item) =>
+                                  item.charAt(0).toUpperCase() + item.slice(1)
+                              )
+                              .join(" • ")
+                          : "No equipment listed"}
                       </p>
                     </div>
 
@@ -578,9 +604,11 @@ const VenuesManagement = () => {
           ) : (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center">
               <div className="max-w-md mx-auto">
-                <h3 className="text-lg font-semibold text-slate-800 mb-2">No Venues Found</h3>
+                <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                  No Venues Found
+                </h3>
                 <p className="text-slate-600 mb-6">
-                  {searchQuery 
+                  {searchQuery
                     ? "No venues match your search criteria. Try adjusting your search terms."
                     : "There are no venues available at the moment. Click the 'Add New Venue' button to create one."}
                 </p>
@@ -777,7 +805,10 @@ const VenuesManagement = () => {
                   <div className="mt-4 grid grid-cols-3 gap-4">
                     {/* Existing Images */}
                     {currentVenue?.images?.map((image, index) => (
-                      <div key={`existing-${index}`} className="relative h-24 rounded-lg overflow-hidden">
+                      <div
+                        key={`existing-${index}`}
+                        className="relative h-24 rounded-lg overflow-hidden"
+                      >
                         <img
                           src={`${baseURL}/${image}`}
                           alt={`Venue ${index + 1}`}
@@ -789,10 +820,13 @@ const VenuesManagement = () => {
                         />
                       </div>
                     ))}
-                    
+
                     {/* New Image Previews */}
                     {selectedFiles.map((file, index) => (
-                      <div key={`new-${index}`} className="relative h-24 rounded-lg overflow-hidden">
+                      <div
+                        key={`new-${index}`}
+                        className="relative h-24 rounded-lg overflow-hidden"
+                      >
                         <img
                           src={URL.createObjectURL(file)}
                           alt={`New Upload ${index + 1}`}
@@ -895,7 +929,10 @@ const VenuesManagement = () => {
 
               <div className="mb-4">
                 <p className="text-slate-600 mb-2">
-                  Current Status: <span className="font-semibold">{venueToUpdateStatus?.status}</span>
+                  Current Status:{" "}
+                  <span className="font-semibold">
+                    {venueToUpdateStatus?.status}
+                  </span>
                 </p>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   New Status

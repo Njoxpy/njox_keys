@@ -24,15 +24,34 @@ import Reports from "./admin/components/reports/Report";
 import Notification from "./admin/components/notifications/Notifications";
 import ProfilePage from "./admin/components/profile/Profile";
 
+import PublicRoute from "./auth/PublicRoute";
+import ProtectedRoute from "./auth/ProtectedRoute";
+
 function App() {
   return (
     <div className="scroll-smooth">
       <Router>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<RootLayout />}>
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+
+          {/* All routes except login require auth */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <RootLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<Homepage />} />
-            <Route path="login" element={<Login />} />
 
             <Route path="venues">
               <Route index element={<VenueListPage />} />
@@ -47,7 +66,7 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Route>
 
-          {/* Admin Dashboard Routes */}
+          {/* Admin Routes - admin role only */}
           <Route path="/admin" element={<DashboardLayout />}>
             <Route index element={<DashboardOverview />} />
             <Route path="dashboard" element={<DashboardOverview />} />
@@ -68,3 +87,9 @@ function App() {
 }
 
 export default App;
+
+/*
+<ProtectedRoute adminOnly={true}>
+                <DashboardLayout />
+              </ProtectedRoute>
+               */
