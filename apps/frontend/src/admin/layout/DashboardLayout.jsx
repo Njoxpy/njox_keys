@@ -13,21 +13,39 @@ import {
   ChevronRight,
   Book,
   Signal,
-} from "lucide-react";
-import { Link, Outlet, useLocation } from "react-router-dom";
-import { User } from "react-feather";
+  Package,
+  Clock,
+  LogIn,
+  LogOut,
+} from "lucide-react"; // All lucide-react icons
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom"; // React Router hooks and components
+import { User } from "react-feather"; // User icon from react-feather
+import useAuthStore from "../../store/useAuthStore";
+import useAuthHydrate from "../../hooks/useAuthHydrate";
 
 // Main App Component
 export default function AdminDashboardApp() {
+  useAuthHydrate(); // Hydrates auth state from local storage
+
+  const { user, logout } = useAuthStore(); // Get user and logout from auth store
+  const navigate = useNavigate(); // Navigation hook
+
+  const handleLogout = () => {
+    logout(); // Call logout function
+    navigate("/login"); // Redirect to login page
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
-      <Layout />
+      <Layout handleLogout={handleLogout} user={user} />{" "}
+      {/* Pass handleLogout and user to Layout */}
     </div>
   );
 }
 
 // Layout Component (Sidebar + Navbar + Outlet)
-function Layout() {
+function Layout({ handleLogout, user }) {
+  // Receive handleLogout and user as props
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -70,6 +88,8 @@ function Layout() {
           pageTitle="Dashboard"
           toggleSidebar={toggleSidebar}
           toggleMobileMenu={toggleMobileMenu}
+          handleLogout={handleLogout} // Pass handleLogout to Navbar
+          user={user} // Pass user to Navbar
         />
 
         {/* Page Content */}
@@ -88,7 +108,6 @@ const Sidebar = ({ isOpen, toggleSidebar, onNavClick, className }) => {
     { name: "Dashboard", path: "/admin/dashboard", icon: Home },
     { name: "Venues", path: "/admin/venues", icon: MapPin },
     { name: "Bookings", path: "/admin/bookings", icon: Calendar },
-  
     { name: "Users", path: "/admin/users", icon: Users },
     { name: "Students", path: "/admin/students", icon: BookOpen },
     { name: "Reports", path: "/admin/reports", icon: Book },
@@ -133,18 +152,19 @@ const Sidebar = ({ isOpen, toggleSidebar, onNavClick, className }) => {
                     hover:bg-slate-700
                     focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500
                     ${isOpen ? "" : "justify-center"}
-                    ${isActive 
-                      ? "bg-slate-700 text-blue-400" 
-                      : "text-slate-300 hover:text-white"
+                    ${
+                      isActive
+                        ? "bg-slate-700 text-blue-400"
+                        : "text-slate-300 hover:text-white"
                     }
                   `}
                 >
-                  <Icon 
-                    size={20} 
+                  <Icon
+                    size={20}
                     className={`
                       ${isOpen ? "mr-3" : ""} 
                       ${isActive ? "text-blue-400" : ""}
-                    `} 
+                    `}
                   />
                   {isOpen && <span>{item.name}</span>}
                 </Link>
@@ -162,7 +182,10 @@ const Sidebar = ({ isOpen, toggleSidebar, onNavClick, className }) => {
               <span className="font-medium">ADM</span>
             </div>
             <div>
-              <p className="font-medium">{localStorage.getItem('userEmail')}</p>
+              {/* Display user email from props or a default */}
+              <p className="font-medium">
+                {localStorage.getItem("userEmail") || "Administrator"}
+              </p>
               <p className="text-sm text-slate-400">Administrator</p>
             </div>
           </div>
@@ -173,7 +196,13 @@ const Sidebar = ({ isOpen, toggleSidebar, onNavClick, className }) => {
 };
 
 // Navbar Component
-const Navbar = ({ pageTitle, toggleSidebar, toggleMobileMenu }) => {
+const Navbar = ({
+  pageTitle,
+  toggleSidebar,
+  toggleMobileMenu,
+  handleLogout,
+  user,
+}) => {
   return (
     <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 md:px-6">
       <div className="flex items-center">
@@ -211,7 +240,7 @@ const Navbar = ({ pageTitle, toggleSidebar, toggleMobileMenu }) => {
       {/* Action Buttons */}
       <div className="flex items-center">
         {/* Notifications */}
-        <button 
+        <button
           className="p-2 rounded-lg hover:bg-slate-100 active:bg-slate-200 relative mr-2 
             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
         >
@@ -219,13 +248,35 @@ const Navbar = ({ pageTitle, toggleSidebar, toggleMobileMenu }) => {
           <span className="absolute top-1 right-1 w-2 h-2 bg-blue-600 rounded-full"></span>
         </button>
 
+        {/* Conditional rendering for Login/Logout based on user prop */}
+        {user ? (
+          <button
+            onClick={handleLogout}
+            className="flex items-center bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded transition-colors m-2"
+          >
+            <LogOut className="h-4 w-4 mr-1" />
+            <span>Logout</span>
+          </button>
+        ) : (
+          <Link
+            to="/login"
+            className="flex items-center bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded transition-colors"
+          >
+            <LogIn className="h-4 w-4 mr-1" />
+            <span>Login</span>
+          </Link>
+        )}
+
         {/* User Avatar */}
-        <button 
+        <button
           className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white
             hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 
             focus:ring-opacity-50 transition-colors"
         >
-          <span className="font-medium text-sm">ADM</span>
+          <span className="font-medium text-sm">
+            {user ? user.email.substring(0, 3).toUpperCase() : "USR"}
+          </span>{" "}
+          {/* Display initials or USR */}
         </button>
       </div>
     </header>

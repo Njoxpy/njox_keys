@@ -1,8 +1,8 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { Home, Package, Clock, LogIn, LogOut } from "lucide-react";
 import useAuthStore from "../store/useAuthStore";
-import Logo from "../assets/logo/logo.png";
 import useAuthHydrate from "../hooks/useAuthHydrate";
+import Logo from "../assets/logo/logo.png";
 
 const RootLayout = () => {
   useAuthHydrate();

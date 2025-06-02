@@ -1,8 +1,15 @@
+// src/store/useAuthStore.js
 import { create } from "zustand";
+import { logoutUser } from "../services/authService";
 
 const useAuthStore = create((set) => {
-  const storedUser = JSON.parse(localStorage.getItem("user"));
-  const storedToken = localStorage.getItem("token");
+  const storedUser =
+    typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("user"))
+      : null;
+
+  const storedToken =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   return {
     user: storedUser || null,
@@ -12,12 +19,12 @@ const useAuthStore = create((set) => {
     login: (userData, token) => {
       localStorage.setItem("user", JSON.stringify(userData));
       localStorage.setItem("token", token);
+
       set({ user: userData, token, role: userData.role });
     },
 
     logout: () => {
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
+      logoutUser();
       set({ user: null, token: null, role: null });
     },
   };
