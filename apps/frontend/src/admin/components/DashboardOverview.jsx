@@ -366,7 +366,7 @@ const DashboardOverview = () => {
             );
           })}
         </div>
-        <Link to={"/admin/venues"}>
+        <Link to={"/admin/reports"}>
           <button className="w-full mt-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors">
             View Full Report
           </button>
