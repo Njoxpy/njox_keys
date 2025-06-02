@@ -12,6 +12,14 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import {
+  getTotalVenues,
+  getTotalStudents,
+  getTotalUsers,
+  getTotalAvailableVenues,
+  getTotalOrders,
+} from "../../services/statsService";
+
 const DashboardOverview = () => {
   const [stats, setStats] = useState({
     totalVenues: 0,
@@ -74,72 +82,14 @@ const DashboardOverview = () => {
         };
 
         // Helper function to handle API response
-        const handleResponse = async (response, endpoint) => {
-          if (!response.ok) {
-            if (response.status === 401) {
-              throw new Error("Session expired. Please log in again.");
-            }
-            throw new Error(`Failed to fetch ${endpoint} data`);
-          }
-          const data = await response.json();
-
-          // Validate response format based on endpoint
-          switch (endpoint) {
-            case "venues":
-              if (typeof data?.venueCount !== "number") {
-                throw new Error("Invalid venues data format");
-              }
-              break;
-            case "students":
-              if (typeof data?.studentsCount !== "number") {
-                throw new Error("Invalid students data format");
-              }
-              break;
-            case "users":
-              if (typeof data?.usersCount !== "number") {
-                throw new Error("Invalid users data format");
-              }
-              break;
-            case "available venues":
-              if (typeof data?.venueCountAvailable !== "number") {
-                throw new Error("Invalid available venues data format");
-              }
-              break;
-            case "orders":
-              if (typeof data?.ordersCount !== "number") {
-                throw new Error("Invalid orders data format");
-              }
-              break;
-          }
-
-          return data;
-        };
 
         // Fetch data from all endpoints
-        const venuesPromise = fetch(
-          "http://localhost:5000/api/v1/stats/total-venues",
-          { headers }
-        ).then((res) => handleResponse(res, "venues"));
 
-        const studentsPromise = fetch(
-          "http://localhost:5000/api/v1/stats/total-students",
-          { headers }
-        ).then((res) => handleResponse(res, "students"));
-
-        const usersPromise = fetch(
-          "http://localhost:5000/api/v1/stats/total-users",
-          { headers }
-        ).then((res) => handleResponse(res, "users"));
-
-        const availableVenuesPromise = fetch(
-          "http://localhost:5000/api/v1/stats/total-available",
-          { headers }
-        ).then((res) => handleResponse(res, "available venues"));
-
-        const ordersPromise = fetch(
-          "http://localhost:5000/api/v1/stats/total-orders",
-          { headers }
-        ).then((res) => handleResponse(res, "orders"));
+        const venuesPromise = getTotalVenues(headers);
+        const studentsPromise = getTotalStudents(headers);
+        const usersPromise = getTotalUsers(headers);
+        const availableVenuesPromise = getTotalAvailableVenues(headers);
+        const ordersPromise = getTotalOrders(headers);
 
         // Resolve all promises
         const [
