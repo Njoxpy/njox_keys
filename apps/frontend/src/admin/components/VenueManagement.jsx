@@ -17,7 +17,7 @@ import {
 import Venue from "../../assets/venue.jpg";
 import { Book } from "react-feather";
 
-const baseURL = "http://localhost:5000"; // Base URL for fetching images
+const baseURL = "http://localhost:5000";
 
 const VenuesManagement = () => {
   const [venues, setVenues] = useState([]);
@@ -513,19 +513,14 @@ const VenuesManagement = () => {
                   className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow"
                 >
                   <div className="relative h-48">
-                    <img
-                      src={
-                        venue.images && venue.images.length > 0
-                          ? `${baseURL}/${venue.images[0]}`
-                          : Venue
-                      }
-                      alt={venue.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = Venue;
-                      }}
-                    />
+                    {venue.images && venue.images.length > 0 && (
+                      <img
+                        src={`${baseURL}/uploads/${venue.images[0]}`}
+                        alt={venue.name}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+
                     <div className="absolute top-2 right-2 flex gap-2">
                       <button
                         onClick={() => handleStatusUpdateClick(venue)}

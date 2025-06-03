@@ -282,7 +282,7 @@ const DashboardOverview = () => {
               icon: MapPin,
             },
             {
-              label: "Total Venue Capacity",
+              label: "Total Venue Available",
               value: loading
                 ? "Loading..."
                 : stats.totalVenues.toLocaleString(),
