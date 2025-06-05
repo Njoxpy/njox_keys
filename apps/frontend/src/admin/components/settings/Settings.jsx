@@ -6,15 +6,19 @@ const SettingsPage = () => {
   const [email, setEmail] = useState("");
 
   useEffect(() => {
-    const userEmail = localStorage.getItem("userEmail");
-    if (userEmail) {
-      setEmail(userEmail);
+    const userString = localStorage.getItem("user");
+    if (userString) {
+      const user = JSON.parse(userString);
+      const userEmail = user?.email;
+
+      if (userEmail) {
+        setEmail(userEmail);
+      }
     }
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle email update logic here
   };
 
   const tabs = [

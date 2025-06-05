@@ -1,8 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
 import { Mail } from "react-feather";
 
 const ProfilePage = () => {
-  const userEmail = localStorage.getItem('userEmail');
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    const userString = localStorage.getItem("user");
+    if (userString) {
+      const user = JSON.parse(userString);
+      const userEmail = user?.email;
+
+      if (userEmail) {
+        setEmail(userEmail);
+      }
+    }
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-800 text-white">
@@ -21,12 +33,14 @@ const ProfilePage = () => {
                   <Mail className="h-12 w-12 text-slate-600" />
                 </div>
               </div>
-              
+
               <div className="border-t border-slate-200 pt-4">
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-600">Email</label>
-                    <p className="mt-1">{userEmail || 'No email found'}</p>
+                    <label className="block text-sm font-medium text-slate-600">
+                      Email
+                    </label>
+                    <p className="mt-1">{email || "No email found"}</p>
                   </div>
                 </div>
               </div>
