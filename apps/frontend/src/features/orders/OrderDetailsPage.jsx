@@ -53,23 +53,21 @@ const MOCK_ORDERS = [
 ];
 
 export default function OrderDetailsPage() {
-  const { id } = useParams(); // <-- Use 'id' to match your route param
+  const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Simulate fetching order by id
   useEffect(() => {
     setLoading(true);
     const timer = setTimeout(() => {
       const foundOrder = MOCK_ORDERS.find((o) => o._id === id);
       setOrder(foundOrder || null);
       setLoading(false);
-    }, 1000); // simulate 1 sec delay
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, [id]);
 
-  // Update status locally on approve
   function handleApprove() {
     setOrder((prev) => prev && { ...prev, status: "approved" });
   }
@@ -77,7 +75,6 @@ export default function OrderDetailsPage() {
   // Dummy back function
   function handleBack() {
     console.log("Back to Orders clicked");
-    // Ideally: useNavigate from react-router-dom for real navigation
   }
 
   if (loading) {

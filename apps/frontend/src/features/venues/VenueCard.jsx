@@ -18,7 +18,7 @@ const VenueCard = ({ venue }) => {
       <span className="text-blue-600 bg-blue-100 px-2 py-1 text-xs rounded-full w-max mb-2">
         {venue.status}
       </span>
-      <Link to={venue.name}>
+      <Link to={venue._id}>
         <button className="mt-auto bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 text-sm">
           View Details
         </button>

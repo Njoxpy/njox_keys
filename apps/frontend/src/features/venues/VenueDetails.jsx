@@ -1,55 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Scanner } from "@yudiel/react-qr-scanner";
 import Footer from "../../components/footer";
+import { fetchVenueById } from "../../services/venueService";
+
+// qr code plugin
+import Html5QrcodePlugin from "../scanner/Html5QrcodePlugin";
 
 const VenueDetailsPage = () => {
+  const baseURL = "http://localhost:5000";
   const { by, id } = useParams();
 
-  // Scanner state
-  const [scanning, setScanning] = useState(false);
-  const [scanResult, setScanResult] = useState(null);
-  const [userInfo, setUserInfo] = useState(null);
+  const [venue, setVenue] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showScanner, setShowScanner] = useState(false);
 
-  // onScan now receives an array of detected barcodes
-  const handleScan = async (detectedBarcodes) => {
-    if (!detectedBarcodes || detectedBarcodes.length === 0) return;
+  // 📷 Handle QR scan results
+  const onNewScanResult = (decodedText) => {
+    console.log("✅ Scanned QR Code:", decodedText);
 
-    // We only care about the first detected barcode for now
-    const firstBarcode = detectedBarcodes[0];
-    const data = firstBarcode.rawValue;
+    // You can POST this to backend or auto-fill a form
+    setShowScanner(false); // Hide scanner after success
+    alert(`Scanned: ${decodedText}`);
+  };
 
-    if (data) {
-      setScanResult(data);
-      setScanning(false); // stop scanning on successful scan
-
-      // Parse QR code (expects format "year|registrationNumber")
-      const [year, regNumber] = data.split("|");
-      if (!year || !regNumber) {
-        setError("Invalid QR code format");
-        setUserInfo(null);
-        return;
-      }
-
+  useEffect(() => {
+    const getVenue = async () => {
       try {
-        // Fetch user info from backend API
-        const res = await fetch(`/api/users/${regNumber}`);
-        if (!res.ok) throw new Error("User not found");
-        const user = await res.json();
-        setUserInfo(user);
-        setError(null);
-      } catch (err) {
-        setError(err.message || "Failed to fetch user info");
-        setUserInfo(null);
+        const data = await fetchVenueById(id);
+        setVenue(data);
+      } catch (error) {
+        setError("Failed to load venue details.");
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
-    }
-  };
+    };
 
-  const handleError = (err) => {
-    console.error(err);
-    setError("Error accessing camera");
-  };
+    if (id) getVenue();
+  }, [id]);
 
   return (
     <>
@@ -60,7 +49,7 @@ const VenueDetailsPage = () => {
           </h1>
 
           <h2 className="text-2xl font-semibold text-slate-700 mb-6">
-            {id ? `Venue ID: ${id}` : "New Lecture Hall 4 (NLH4)"}
+            {venue?.name || `Venue ID: ${id}`}
           </h2>
 
           {by && (
@@ -69,114 +58,79 @@ const VenueDetailsPage = () => {
             </p>
           )}
 
-          <section className="flex flex-col lg:flex-row gap-8">
-            <div className="flex-1">
-              <p className="text-slate-600 mb-6 text-base sm:text-lg leading-relaxed">
-                Block A, Status: Active, Capacity: 100, Equipment: 100
-              </p>
+          {loading && <p>Loading venue information...</p>}
+          {error && <p className="text-red-600">{error}</p>}
 
-              <img
-                src="https://images.pexels.com/photos/101808/pexels-photo-101808.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-                alt="Main venue"
-                width={600}
-                height={400}
-                className="rounded-xl object-cover shadow-md"
-                style={{ display: "block" }}
-              />
-            </div>
-
-            <div className="flex flex-col gap-6 flex-shrink-0 lg:w-[300px]">
-              <img
-                src="https://images.pexels.com/photos/256369/pexels-photo-256369.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-                alt="Venue detail 1"
-                width={300}
-                height={190}
-                className="rounded-xl object-cover shadow-md"
-                style={{ display: "block" }}
-              />
-              <img
-                src="https://images.pexels.com/photos/256297/pexels-photo-256297.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-                alt="Venue detail 2"
-                width={300}
-                height={190}
-                className="rounded-xl object-cover shadow-md"
-                style={{ display: "block" }}
-              />
-            </div>
-          </section>
-
-          {/* Request a Key Section */}
-          <section className="mt-12 bg-white p-6 rounded-lg shadow border border-slate-200">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-xl font-semibold text-slate-800 mb-2">
-                  Request Your Access Key
-                </h3>
-                <p className="text-slate-600 max-w-xl">
-                  This system helps universities efficiently manage access keys
-                  for their facilities, making it simple to track and control
-                  who has access at any time.
+          {!loading && venue && (
+            <section className="flex flex-col lg:flex-row gap-8">
+              <div className="flex-1">
+                <p className="text-slate-600 mb-6 text-base sm:text-lg leading-relaxed">
+                  Block: {venue.block}, Status: {venue.status}, Capacity:{" "}
+                  {venue.capacity}, Equipment: {venue.equipment}
                 </p>
+
+                <img
+                  src={
+                    venue.mainImage
+                      ? `${baseURL}/uploads/${venue.mainImage}`
+                      : "https://via.placeholder.com/600x400"
+                  }
+                  alt="Main venue"
+                  width={600}
+                  height={400}
+                  className="rounded-xl object-cover shadow-md"
+                />
               </div>
 
-              {!scanning && (
-                <button
-                  onClick={() => {
-                    setScanning(true);
-                    setScanResult(null);
-                    setUserInfo(null);
-                    setError(null);
-                  }}
-                  className="self-start sm:self-auto bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
-                >
-                  Request Key
-                </button>
-              )}
-
-              {scanning && (
-                <div className="w-full max-w-sm">
-                  <Scanner
-                    scanDelay={300}
-                    onError={handleError}
-                    onScan={handleScan}
-                    style={{ width: "100%" }}
-                    formats={["qr_code"]} // specify QR code only for better accuracy
+              <div className="flex flex-col gap-6 flex-shrink-0 lg:w-[300px]">
+                {(venue.images || []).slice(0, 2).map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={`${baseURL}/uploads/${img}`}
+                    alt={`Venue detail ${idx + 1}`}
+                    width={300}
+                    height={190}
+                    className="rounded-xl object-cover shadow-md"
                   />
-                  <button
-                    onClick={() => setScanning(false)}
-                    className="mt-2 bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700 transition"
-                  >
-                    Cancel Scan
-                  </button>
-                </div>
-              )}
-            </div>
+                ))}
+              </div>
+            </section>
+          )}
 
-            {/* Display scan result & user info */}
-            {error && (
-              <p className="mt-4 text-red-600 font-semibold">{error}</p>
+          {/* QR Request Section */}
+          <section className="mt-12 bg-white p-6 rounded-lg shadow border border-slate-200">
+            <h3 className="text-xl font-semibold text-slate-800 mb-2">
+              Request Your Access Key
+            </h3>
+            <p className="text-slate-600 max-w-xl">
+              This system helps universities efficiently manage access keys for
+              their facilities, making it simple to track and control who has
+              access at any time.
+            </p>
+
+            {!showScanner && (
+              <button
+                onClick={() => setShowScanner(true)}
+                className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+              >
+                Request Key
+              </button>
             )}
 
-            {scanResult && (
-              <p className="mt-4 text-green-700 font-semibold">
-                Scanned QR: {scanResult}
-              </p>
-            )}
-
-            {userInfo && (
-              <div className="mt-4 bg-gray-100 p-4 rounded border border-gray-300">
-                <h4 className="font-semibold text-lg mb-2">User Info:</h4>
-                <p>
-                  <strong>Name:</strong> {userInfo.name}
-                </p>
-                <p>
-                  <strong>Registration Number:</strong>{" "}
-                  {userInfo.registrationNumber}
-                </p>
-                <p>
-                  <strong>Year of Study:</strong> {userInfo.yearOfStudy}
-                </p>
-                {/* Add more user fields here */}
+            {showScanner && (
+              <div className="mt-6">
+                <Html5QrcodePlugin
+                  fps={10}
+                  qrbox={250}
+                  disableFlip={false}
+                  qrCodeSuccessCallback={onNewScanResult}
+                />
+                <button
+                  onClick={() => setShowScanner(false)}
+                  className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+                >
+                  Cancel Scan
+                </button>
               </div>
             )}
           </section>

@@ -13,7 +13,7 @@ const VenueCard = ({ venue }) => (
         <h3 className="font-bold text-slate-800">{venue.name}</h3>
         <p className="text-sm text-slate-600">{venue.block}</p>
       </div>
-      <Link to={`venues/${venue.name}`}>
+      <Link to={`venues/${venue._id}`}>
         <button className="text-blue-600 bg-blue-100 rounded-full px-3 py-1 text-sm mt-2 md:mt-0">
           View Details
         </button>
