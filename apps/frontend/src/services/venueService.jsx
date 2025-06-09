@@ -4,7 +4,7 @@ import API from "../utils/api";
 
 export const fetchVenues = async () => {
   try {
-    const response = await API.get("/venues");
+    const response = await API.get("/v1/venues");
     return response.data;
   } catch (error) {
     console.error("Error fetching venues:", error);
@@ -14,7 +14,7 @@ export const fetchVenues = async () => {
 
 export const fetchVenueById = async (venueId) => {
   try {
-    const response = await API.get(`/venues/${venueId}`);
+    const response = await API.get(`/v1/venues/${venueId}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching venue with ID ${venueId}:`, error);

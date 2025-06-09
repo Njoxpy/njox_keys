@@ -1,10 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
+const baseURL = "http://localhost:5000";
 const VenueCard = ({ venue }) => (
   <div className="flex flex-col md:flex-row bg-white rounded-xl shadow-sm overflow-hidden">
     <img
-      src={venue.image}
+      src={`${baseURL}/uploads/${venue.images[0]}`}
       alt={venue.name}
       className="w-full md:w-48 h-32 object-cover rounded-t-xl md:rounded-l-xl md:rounded-t-none"
     />

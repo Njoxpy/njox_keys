@@ -1,7 +1,5 @@
-// src/pages/VenueListPage.jsx
-
 import { useEffect, useState } from "react";
-import { mockVenues } from "../venues/data/mockVenues";
+import { fetchVenues } from "../../services/venueService";
 import VenueCard from "../venues/VenueCard";
 import SearchAndFilterBar from "../venues/SearchAndFilterBar";
 import Pagination from "../venues/Pagination";
@@ -16,10 +14,21 @@ const VenueListPage = () => {
   const [capacityFilter, setCapacityFilter] = useState(0);
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API fetch
-    setTimeout(() => setVenues(mockVenues), 500);
+    const loadVenues = async () => {
+      try {
+        const data = await fetchVenues();
+        setVenues(data);
+      } catch (error) {
+        console.error("Failed to fetch venues:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadVenues();
   }, []);
 
   const filteredVenues = venues
@@ -63,11 +72,15 @@ const VenueListPage = () => {
           blocks={blocks}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {paginatedVenues.map((venue, idx) => (
-            <VenueCard key={idx} venue={venue} />
-          ))}
-        </div>
+        {loading ? (
+          <p className="text-center text-slate-500">Loading venues...</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {paginatedVenues.map((venue) => (
+              <VenueCard key={venue._id} venue={venue} />
+            ))}
+          </div>
+        )}
 
         <Pagination
           currentPage={currentPage}

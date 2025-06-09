@@ -1,4 +1,5 @@
 // src/components/VenueCard.jsx
+const baseURL = "http://localhost:5000";
 
 import { Link } from "react-router-dom";
 
@@ -6,10 +7,11 @@ const VenueCard = ({ venue }) => {
   return (
     <div className="bg-white text-slate-800 rounded-2xl shadow-md hover:shadow-lg transition p-4 flex flex-col">
       <img
-        src={venue.images[0]}
+        src={`${baseURL}/uploads/${venue.images[0]}`}
         alt={venue.name}
         className="rounded-xl h-40 object-cover mb-4"
       />
+
       <h3 className="text-lg font-bold mb-1">{venue.name}</h3>
       <p className="text-sm mb-1">📍 {venue.block}</p>
       <p className="text-sm mb-1">👥 Capacity: {venue.capacity}</p>

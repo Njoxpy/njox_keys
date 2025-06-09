@@ -1,11 +1,33 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { fetchOrders } from "../services/orderService";
 
-const OrderedVenueCard = ({ venue }) => {
-  const formattedDate = new Date(venue.orderDate).toLocaleString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
+const OrderedOrdersCard = ({ venue }) => {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const getOrders = async () => {
+      try {
+        const data = await fetchOrders(); // 🔥 await this
+        setOrders(data || []); // fallback to empty array
+      } catch (error) {
+        console.error("❌ Failed to fetch orders:", error);
+        setOrders([]); // error fallback
+      } finally {
+        setLoading(false); // always stop loading
+      }
+    };
+    getOrders();
+  }, []);
+
+  if (loading) {
+    return <p>Loading orders...</p>;
+  }
+
+  if (orders.length === 0) {
+    return <p className="text-slate-500">No orders found.</p>;
+  }
 
   return (
     <div className="flex flex-col md:flex-row bg-white rounded-xl shadow-sm overflow-hidden">
@@ -19,17 +41,15 @@ const OrderedVenueCard = ({ venue }) => {
           <h3 className="font-bold text-slate-800">{venue.name}</h3>
           <p className="text-sm text-slate-600">{venue.block}</p>
           <p className="text-xs text-slate-500">
-            Ordered by {venue.orderedBy} on {formattedDate}
+            Ordered by: {venue.orderedBy}
           </p>
         </div>
-        <Link to={`orders/22`}>
-          <button className="text-blue-600 bg-blue-100 rounded-full px-3 py-1 text-sm mt-2 md:mt-0">
-            View More
-          </button>
-        </Link>
+        <button className="text-blue-600 bg-blue-100 rounded-full px-3 py-1 text-sm mt-2 md:mt-0">
+          View More
+        </button>
       </div>
     </div>
   );
 };
 
-export default OrderedVenueCard;
+export default OrderedOrdersCard;
